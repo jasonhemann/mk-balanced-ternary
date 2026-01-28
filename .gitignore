@@ -1,0 +1,5 @@
+compiled/
+*.zo
+*~
+.DS_Store
+.codex/
