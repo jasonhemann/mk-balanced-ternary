@@ -21,6 +21,11 @@ Exit criteria:
 
 ## Planned follow-on phases
 
+### M1.25 Binary harness hardening (immediate pre-BT step)
+- Build a binary-only validation harness between host Racket naturals and miniKanren backward binary relations.
+- Include deterministic bounded checks, randomized checks, partial-term bounded cases, and explicit divergence classification.
+- Treat harness behavior as a confidence gate before adding balanced-ternary comparison layers.
+
 ### M1.5 Operational profile hardening
 - Expand mode behavior notes per relation.
 - Ensure bounded inverse-mode expectations are explicit in tests.
