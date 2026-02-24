@@ -1,0 +1,55 @@
+# mk-balanced-ternary
+
+This project builds pure miniKanren arithmetic for balanced-ternary integers in LSD-first form, with executable relation definitions, an oracle for test comparison, and test suites that enforce both semantic correctness and bounded operational behavior.
+
+## Current phase and primary deliverables
+
+Current delivery target is balanced-ternary M0 and M1:
+- M0 oracle in host code: `bt->int`, `int->bt` for tests.
+- M1 core relations in miniKanren: `trito`, `add3o`, `nego`, `pluso`, `minuso`, `mul1o`, `*o`.
+- Verification focus: ground/ground and bounded inverse modes exercised by tests.
+
+## Quickstart
+
+Run fast regression tests:
+
+```sh
+raco test test
+```
+
+Run slow assurance tests:
+
+```sh
+raco test assurance/slow_assurance_test.rkt
+```
+
+## Repository map
+
+Core balanced-ternary track:
+- `src/bt_rel.rkt` - primary relation implementation target.
+- `src/bt_oracle.rkt` - host oracle conversions used by tests.
+- `test/bt_rel_test.rkt` - primary balanced-ternary regression tests.
+
+Legacy baseline track:
+- `src/binary-numbers.rkt` - binary miniKanren arithmetic baseline.
+- `test/binary_numbers_test.rkt` - binary baseline regression tests.
+
+Reference artifacts:
+- `artifacts/arith.prl` - copied Prolog reference implementation.
+- `artifacts/Pure_Declarative_and_Constructive_Arithmetic_Relat.pdf` - source paper referenced during design.
+
+Assurance:
+- `assurance/slow_assurance_test.rkt` - heavy randomized checks and bounded timeout assertions.
+
+Documentation:
+- `docs/SPEC.md` - normative arithmetic and operational contract.
+- `docs/ROADMAP.md` - phase sequencing and planning.
+- `docs/FASTER_MINIKANREN.md` - backend syntax and discipline notes.
+- `docs/INTEROP.md` - future interop strategy.
+
+## Normative vs explanatory docs
+
+Documentation SPOT policy:
+- Entry point: this `README.md`.
+- Normative source of truth: `docs/SPEC.md`.
+- Planning and future strategy docs may summarize or sequence work, but if any wording differs, `docs/SPEC.md` is authoritative.

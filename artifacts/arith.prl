@@ -1,0 +1,1062 @@
+%	 Pure, declarative, and constructive binary arithmetics
+%
+% aka: Addition, Multiplication, Division with the remainder,
+% Discrete Logarithm as sound and complete, pure and declarative
+% relations that can be used in any mode whatsoever.
+% The relations define arithmetics over base-2 non-negative numerals
+% of *arbitrary* size.
+%
+% In particular, we define the predicate div/4 such that div(N,M,Q,R)
+% succeeds if and only if N = M*Q + R and 0<=R<M. We run the following
+% queries:
+%   -- 1 isb N1, 0 isb N0, div(N1,N0,Q,_).
+%      It fails instantly and does not try to enumerate all natural numbers.
+%   -- 1 isb N1, 5 isb N5, div(N5,M,N1,_).
+%      It finds all such M that divide (perhaps unevenly)
+%      5 with the quotient of 1. The answer is the set (5 4 3).
+% div(N5,M,N7,_) simply fails and does not loop forever.
+% We can use our mul(X,Y,Z) either to multiply two numbers
+% X and Y -- or to find all factorizations of Z. See the test below.
+% Furthermore, we can evaluate add(X,[l],Y) and get the stream
+% of solutions, among which is [[o, _G523|_G524], [l, _G523|_G524]]
+% which essentially says that 2*x and 2*x +1 are successors, for all x>0!
+%
+% Incidentally, the relation 'div' encompasses all four operations
+% of arithmetics: we can use div(X,Y,Z,0) to multiply and divide and
+% div(X,Y,1,R) to add and subtract.
+%
+% Our log/4 predicate has the property that log(N,B,Q,R) succeeds if
+% and only if N = B^Q + R where 0 <= R and Q is the largest such integer.
+% We can use log/4 to exponentiate, to find discrete logarithms, or
+% to find the logarithm base.
+%
+%
+% At first glance, our problem seems trivial. We can use the mu-calculus
+% definition of, say, multiplication to write
+% mul(X,Y,Z) = mu(X1,Y1,Z1). X1*Y1=Z1 & X1=X & Y1=Y & Z1=Z
+% and then replace mu(X1,Y1,Z1) with a relation that generates all
+% possible triples of numerals. The problem comes when we want to evaluate
+% mul(two,Y,one). Obviously, there is no such Y that makes the relation
+% hold. The naive mu-calculus implementation will keep generating
+% numbers for Y forever, as none of the generated numbers will
+% make 2*Y=1 true.
+%
+% The naive mu-calculus approach may fail even if the relation has a solution.
+% For example, if mu(X1,Y1,Z1) is implemented as
+%   gen(X1), gen(Y1), gen(Z1)
+% then evaluating mul(X,Y,2) will generate X1=0 first and then
+% will stuck in generating successive numbers for Y trying to
+% find one that makes 0*Y=2 hold.
+%
+% The present approach places the correct upper bounds on the
+% generated numbers to make sure the search process terminates.
+% Therefore, our arithmetic relations are not only sound
+% (e.g., if mul(X,Y,Z) holds then it is indeed X*Y=Z) but also
+% complete (if X*Y=Z is true then mul(X,Y,Z) holds) and
+% nearly refutationally complete (if X*Y=Z is false then mul(X,Y,Z) fails,
+% in finite time -- provided that X, Y and Z share no common
+% logic variables.
+%
+% We give two implementations of `mul', both of which have the
+% properties of soundness and nearly refutational completeness.
+% The first implementation is six times faster, but it does not
+% always recursively enumerate its domain if that domain is infinite.
+% This is the case when mul(X,Y,Z) is invoked when all three X, Y, and
+% Z being uninstantiated variables. The predicate in that case has
+% the infinite number of solutions, as expected. Alas, those solutions
+% look as follows:
+%	X = 2,  Y = 3, Z = 6
+%	X = 4,  Y = 3, Z = 12
+%	X = 8,  Y = 3, Z = 24
+%	X = 16, Y = 3, Z = 48
+% That is, mul(X,Y,Z) keeps generating solutions where X is a power of
+% two. Therefore, when the solution set of the predicate `mul' is infinite, it
+% truly produces an infinite set of solutions -- but only a subset of
+% all possible solutions. In other words, `mul' does not recursively
+% enumerate the set of all numbers such that X*Y=Z if that set is infinite.
+%
+% Therefore,
+%   X = [l,l], Y = [l,l], mul(X,Y,Z)
+%   mul(X,Y,Z), X = [l,l], Y = [l,l]
+% work differently. The former terminates and binds Z to the representation
+% of 9 (the product of 3 and 3). The latter fails to terminate.
+% This is not generally surprising as 'commas' in Prolog are not truly
+% conjunctions: they are not commutative. Still, we would like our `mul'
+% to have the algebraic properties expected of multiplication.
+%
+% The second version of `mul', albeit slower, almost completely fixes
+% the problem. It recursively enumerates the domain of numbers X, Y, Z
+% such as X*Y=Z and Y <= X. A test at the end of this file shows that
+% if I and J are some definite numbers, then
+%	X = I, Y = J, mul(X,Y,Z)
+%       mul(X,Y,Z), (X = I, Y = J; X = J, Y = I)
+% are equivalent. This is true no matter which numbers I and J are.
+% The predicate mul(X,Y,Z) will, in finite number of steps, produce any
+% solution in its domain. We achieve that property _without_ giving
+% up refutational completeness: if X and Y and Z are so instantiated
+% that X*Y /= Z, then mul(X,Y,Z) fails -- in finite time! Incidentally,
+% this is the case when either X or Y are uninstantiated, as in
+%   X=[o,l], Z=[l,l], mul(X,Y,Z).
+% because there can't be any number Y such that 2*Y=3. Also,
+% if Z is instantiated, then mul(X,Y,Z) delivers _all_ factorizations
+% of Z.
+%
+% We should note that conjunctions of arithmetic predicates can't be always
+% terminating. Ditto if arguments of predicates share common logic
+% variables. Indeed, mul([l,l],[l|X],[l,o|X]) will fail to terminate.
+% This is because mul([l,l],[l|X],[l,o|X]) is equivalent to
+% the conjunction of primitive goals
+%   mul([l,l],N,P), add([l],X2,N), add([l],X4,P), add(X,X,X2), add(X2,X2,X4)
+% The mul predicate will produce the infinite stream of numbers
+% with the property P = 3N, but none of these numbers will satisfy
+% the constraint P = 4X+1, N = 2X+1.
+% Well, in the case above the impossibility is easy to see. However, that
+% case is just a particular case of a Diofantine equation. In general,
+% any Diofantine equation can be represented as a conjunction of
+% arithmetic functions. Refutational completeness of such a conjunction
+% is therefore equivalent to Hilbert's 10th problem, which is undecidable.
+%
+% Arithmetic predicates are easy to implement in an impure
+% system such as Prolog, with the help of the predicate 'var'. The latter
+% can tell if its argument is an uninstantiated variable. However, 'var'
+% is impure. The present file shows the implementation of arithmetic
+% relations in a _pure_ logic system -- no cuts, no 'var' predicate,
+% no negations.
+%
+% We should point out that in the Kanren system
+%	http://kanren.sourceforge.net/
+% it is possible to implement the recursively enumerating `mul'
+% predicate without the restriction Y <= X. This is because Kanren
+% offers a `fair-scheduling' disjunction: any-interleave. That implementation
+% of arithmetics is still pure and constructive.
+%
+%
+% The pure and constructive arithmetics (addition/subtraction)
+% on _decimal_ numbers is described in Section 6 of
+%	http://pobox.com/~oleg/ftp/Haskell/number-parameterized-types.ps.gz
+% That paper implements the arithmetics in the type system.
+% Therefore, we can represent numerical equality and inequality constraints
+% in the type system of Haskell. We can statically type the function vappend
+% (that appends two length-number-parameterized vectors and makes sure
+% the size of the result is the sum of the sizes of the arguments --
+% statically). We can statically make sure that the function tail is applied
+% to a non-empty vector. The implementation in the paper is assuredly pure
+% as the type system of Haskell has no 'cut', 'var', etc. predicates.
+%
+%
+%
+% The numerals are represented in the binary little-endian
+% (least-significant bit first) notation. The higher-order bit must be 1.
+% Zero bit is denoted by 'o' (low-case oh) and the set bit is denoted by
+% 'l' (low-case el).
+% []      represents 0
+% [l]     represents 1
+% [o,l]   represents 2
+% [l,l]   represents 3
+% [o,o,l] represents 4
+% etc.
+
+% Please see the tests at the very end.
+%
+% This file was tested with SWI-Prolog Version 5.4.5
+%
+% $Id: pure-bin-arithm.prl,v 1.12 2007/06/11 01:12:34 oleg Exp oleg $
+
+
+
+% Auxiliary predicate to build and show binary numerals.
+% The following predicate is not the part of the system, strictly speaking.
+% It is also `impure'. None of the other predicates need +/- annotations
+% because they can be used in any mode whatsoever, and none of the
+% other predicates use cut.
+% The auxiliary predicate is "input-output", to input and output numerals
+% from/into more convenient representation. I must say that
+% the binary notation is not too bad per se.
+
+?- op(700,xfx,isb).
+
+% +PrologNum isb -OurNum
+% -PrologNum isb +OurNum
+0 isb [].
+N isb L :- number(N), N > 0, !, N1 is N // 2, P is N mod 2,
+	(P = 0, L = [o|L1], N1 isb L1;
+	 P = 1, L = [l|L1], N1 isb L1), !.
+N isb [o|L1] :- !, N1 isb L1, N is 2*N1.
+N isb [l|L1] :- !, N1 isb L1, N is 2*N1 + 1.
+
+
+%----------------------------------------------------------------------
+% Addition and subtraction
+
+% zero: N holds if N is zero
+zero([]).
+
+% not a zero
+pos([_|_]).
+
+% at least two
+gtl([_,_|_]).
+
+% Generator of binary numerals, aka the type predicate
+genb([]).                      	% 0 is a number
+genb([l|X]) :- genb(X).		% if X is a number, so is 2X+1
+genb([o|X]) :- pos(X), genb(X). % if X>0 is a number, so is 2X
+
+% One-bit full-adder: carry-in a b r carry-out
+% The relation holds if
+% carry-in + a + b = r + 2*carry-out
+% where carry-in a b r carry-out are all either o or l.
+
+full1_adder(o,o,o,o,o).
+full1_adder(o,l,o,l,o).
+full1_adder(o,o,l,l,o).
+full1_adder(o,l,l,o,l).
+
+full1_adder(l,o,o,l,o).
+full1_adder(l,l,o,o,l).
+full1_adder(l,o,l,o,l).
+full1_adder(l,l,l,l,l).
+
+
+% Multiple-bit full-adder (ripple-carry adder): carry-in a b r
+% holds if carry-in + a + b = r
+% where a, b, and r are binary numerals and carry-in is either o or l
+
+fulln_adder(o,A,[],A).			% 0 + a + 0 = a
+fulln_adder(o,[],B,B) :- pos(B).		% 0 + 0 + b = b
+fulln_adder(l,A,[],R) :- fulln_adder(o,A,[l],R). % 1 + a + 0 = 0 + a + 1
+fulln_adder(l,[],B,R) :- pos(B), fulln_adder(o,[l],B,R). % 1 +0 + b = 0 + 1 + b
+
+% The following three clauses are needed to make all numbers
+% well-formed by construction, that is, to make sure the
+% higher-order bit is one.
+fulln_adder(Cin,[l],[l],R) :-		% c + 1 + 1 >= 2, always two-bit
+	R = [R1,R2], full1_adder(Cin,l,l,R1,R2).
+
+    % c + 1 + (2*br + bb) = (2*rr + rb) where br > 0, and so is rr > 0
+fulln_adder(Cin,[l],[BB|BR],[RB|RR]) :-
+	pos(BR), pos(RR),
+	full1_adder(Cin,l,BB,RB,Cout),
+	fulln_adder(Cout,[],BR,RR).
+
+fulln_adder(Cin,A,[l],R) :-  % symmetric case for the above
+	gtl(A),  % a > 1, the case of a=1 is handled already
+	gtl(R),  % and so is r > 1
+	fulln_adder(Cin,[l],A,R).
+
+
+    % carry-in + (2*ar + ab) + (2*br + bb)
+    % = (carry-in + ab + bb) (mod 2)
+    % + 2*(ar + br + (carry-in + ab + bb)/2)
+    % The cases of ar= 0 or br = 0 have already been handled.
+    % So, now we require ar >0 and br>0. That implies that rr>0.
+fulln_adder(Cin,[AB|AR],[BB|BR],[RB|RR]) :-
+	pos(AR), pos(BR), pos(RR),
+	full1_adder(Cin,AB,BB,RB,Cout),
+	fulln_adder(Cout,AR,BR,RR).
+
+
+% a + b = c
+add(A,B,C) :- fulln_adder(o,A,B,C).
+
+% a - b = c
+sub(A,B,C) :- add(B,C,A).
+
+% less: N M
+% holds if N < M, or
+% if exists X>0, N + X = M
+less(N,M) :- pos(X), add(N,X,M).
+
+% The above addition and subtraction are not recursively enumerating,
+% but can be made to, using the technique described below.
+
+%----------------------------------------------------------------------
+% Multiplication and division
+
+% lessl a b
+% holds if a=0 and b>0, or if (floor (log2 a)) < (floor (log2 b))
+% That is, we compare the length (logarithms) of two numerals
+% For a positive numeral, its bitlength = (floor (log2 n)) + 1
+lessl([],[_|_]).
+lessl([_|X],[_|Y]) :- lessl(X,Y).
+
+% samel a b
+% holds if both a and b are zero
+% or if (floor (log2 a)) = (floor (log2 b))
+samel([],[]).
+samel([_|X],[_|Y]) :- samel(X,Y).
+
+% lessl3 p1 p n m
+% holds iff
+% p1 = 0 and p > 0 or
+% length(p1) < min(length(p), length(n) + length(m) + 1)
+lessl3([],[_|_],_,_).
+lessl3([_|P1R],[_|PR],[],[_|MR]) :- lessl3(P1R,PR,[],MR).
+lessl3([_|P1R],[_|PR],[_|NR],M)  :- lessl3(P1R,PR,NR,M).
+
+
+% n * m = p
+%% mul([],M,[]).					% 0 * m = 0
+%% mul(N,[],[]) :- pos(N).				% n * 0 = 0, n > 0
+%% mul([l],M,M) :- pos(M).				% 1 * m = m, m > 0
+
+      % (2*nr) * m = 2*(nr*m), m>0 (the case of m=0 is taken care of already)
+      % nr > 0, otherwise the number is ill-formed
+%% mul([o|NR],M,[o|PR]) :-
+%%	pos(M), pos(NR), pos(PR),
+%%	mul(NR,M,PR).
+
+      % (2*nr+1) * m = 2*(n*m) + m
+      % m > 0; also nr>0 for well-formedness
+      % the result is certainly greater than 1.
+      % we note that m > 0 and so 2*(nr*m) < 2*(nr*m) + m
+      % and (floor (log2 (nr*m))) < (floor (log2 (2*(nr*m) + m)))
+      % Furthermore, (floor (log2 (* n m))) + 1 <=
+      %              (floor (log2 n)) + 1 + (floor (log2 m)) + 1
+%% mul([l|NR],M,P) :-
+%%	pos(M), pos(NR), gtl(P),
+%%	lessl3(P1,P,[l|NR],M),
+%%	mul(NR,M,P1),
+%%	add([o|P1],M,P).
+
+% Now, the last clause needs some explanation.
+% Relations lessl3 and mul are infinitary: their solution set can be infinite.
+% (or, in other words, they can be backtracked infinitely many times).
+% If 'add' on the last line keeps failing, we may become stuck.
+% First we note that if P is ground, then lessl3(P1,P,_,_) is
+% a finitary relation -- its solution set is finite. Therefore, if
+% mul(NR,M,P1) and add keep failing, we eventually exhaust all solutions to
+% lessl3(P1,P,_,_) and fail the 'mul' clause.
+% Let us make the claim more precise:
+% Proposition 1. If P is definite number, mul(N,M,P) has a finite
+% number of solutions.
+% Proof: by induction. Base case: P = 0.
+% Inductive case: proposition true for all P1<P.
+% Then consider mul(N,M,[o|P1]) and mul(N,M,[l|P1]).
+% We rely on the facts lessl3(X,P,_,_) and add(X,Y,P) are both finitary
+% when P is definite, and the conjunction (aka, join) of finite
+% relations is finite.
+%
+% Proposition 2. If N and M are definite numbers, mul(N,M,P) has at most
+% one solution.
+% First we note that all clauses of 'mul' are disjoin.
+% If M=0, the proposition obviously holds (only one clause can match).
+% We then take M>0 and prove by induction on N. The only non-trivial
+% case is N odd. Relation mul(NR,M,P1) is finite (semi-deterministic,
+% actually). Relation lessl3(P1,P,[l|NR],M) has the finite number
+% of solutions if both NR and M are definite numbers. Thus the last
+% clause of mul is terminating and is semi-deterministic
+% under conditions of Proposition 2.
+%
+% If both N and P (or M and P) are unbounded, the relation mul(N,M,P)
+% will have the infinite number of solutions. However, given an arbitrary
+% bound on the number of solutions, that number of solutions will be found
+% in finite time. The reason is that lessl3(P1,P,[l|NR],M) (where P and
+% either NR or M are unbound) generates (P1=k, P=k+1+n where n is unbound).
+% There is always a term in that sequence (a solution of lessl3)
+% that makes both mul(NR,M,P1) and add([o|P1],M,P) hold
+% for infinitely many M (or NR).
+%
+% Please note that the above proposition said: "given an arbitrary _bound_
+% on the _number_ of solutions, that _number_ of solutions will be found
+% in finite time." The proposition did not say: given an arbitrary
+% _solution_. This is because the above `mul' relation is not recursively
+% enumerating, as was explained in the title comments. Given below
+% is a recursively enumerating version (with a restriction that doesn't
+% seem significant). Alas, it is also about six times slower.
+
+
+% Recursively-enumerating predicate mul(X,Y,Z).
+% It recursively enumerates its domain X*Y = Z, Y <= X.
+% Note that if X and Y are instantiated, then Y may still be greater
+% than X. So, the following mul() does behave like the mul above,
+% but in addition it enumerates all solutions such that X*Y = Z, Y <= X.
+% We still maintain the nearly refutational completeness.
+%
+% Please note the analogy with space-filling curves and the proof
+% that rational numbers are countable.
+
+% The key is to write such a predicate pred(N,M,P) that enumerates
+% all numerals such that M <= N.
+
+% The first, more complex attempt:
+% lessl31([],[_|_],_,_).
+% lessl31([_|P1R],[_|PR],N,[_|MR]) :- lessl31(P1R,PR,N,MR).
+% lessl31([_|P1R],[_|PR],[_|NR],M)  :- lessl31(P1R,PR,NR,M).
+% % Triangular:
+% % lessl31(C,P,N,M), lessl(M,[_|C]), lessl(N,[_|C]).
+
+% lessl2(P,N,M) holds if length(P) <= length(N) + length(M)
+lessl2([],_,_).
+lessl2([_|PR],[],[_|MR]) :- lessl2(PR,[],MR).
+lessl2([_|PR],[_|NR],M)  :- lessl2(PR,NR,M).
+
+
+% A better solution follows.
+% Let us consider the properties of the predicate lessl(N,P).
+% It generates solutions such as
+%    N = [], P = [_G293|_G294] ;
+%    N = [_G293], P = [_G296, _G299|_G300] ;
+%    N = [_G293, _G299], P = [_G296, _G302, _G305|_G306]
+% Let us introduce definitions:
+%    A variable X is called L-instantiated if it is instantiated
+%    to a list of finite length, possibly with un-instantiated
+%    elements
+%    A variable is called L-uninstantiated if it is instantiated
+%    to a list with an uninstantiated tail.
+% For example, [_,_] is L-instantiated and [_,_|_] is L-uninstantiated.
+%
+% Proposition lessl: all the solutions of the predicate lessl(N,P)
+% have N L-instantiated. OTH, P is at most is L-uninstantiated, with
+% progressively longer L-instantiated prefixes.
+% Proof is by trivial induction on the definition of lessl.
+% Corollary lessl: if P is L-instantiated, lessl(N,P) has
+% the finite number of solutions.
+% Corollary lessl2: if N is L-instantiated, lessl(N,P) has
+% only one solution.
+
+% Let us define
+enum(N,M,P) :- lessl(N,[_|P]), lessl(M,[_|N]), lessl2(P,N,M).
+
+% Here lessl(M,[_|N]) is a shorter way to write (lessl(M,N); samel(M,N))
+
+% The relation enum(N,M,P) has the following properties.
+%
+% Proposition enum1: if P is L-instantiated, enum(N,M,P) has the
+% finite number of solutions.
+% Proof: if P is L-instantiated, lessl(N,[_|P]) has the finite number
+% of solutions, by Corollary lessl. Each of those solutions
+% have N L-instantiated. Therefore, lessl(M,[_|N])
+% has the finite number of solutions. So does lessl2(P,N,M),
+% as is clear by inspection.
+%
+% Proposition enum2: if N and M are both L-instantiated, enum(N,M,P)
+% has the finite number of solutions.
+% If N is L-instantiated, lessl(N,[_|P]) has only one solution. P may still
+% be L-uninstantiated. However, lessl2(P,N,M) will have only finite
+% number of solutions if both N and M are L-instantiated.
+%
+% Proposition enum3: If N is L-instantiated, enum(N,M,P) has the
+% finite number of solutions.
+% Proof: if N is L-instantiated, lessl(N,[_|P]) has only one solution,
+% with P at most L-uninstantiated. lessl(M,[_|N]) will
+% have exactly N+1 solutions. In all these solutions, M will be
+% L-instantiated. Therefore, lessl2(P,N,M) will have the finite
+% number of solutions in that case as well.
+%
+% Proposition enum4: If M is L-instantiated, enum(N,M,P) recursively
+% enumerates its domain, of L-instantiated N, M and P so that
+% length(M) <= length(N) and length(P) <= length(N) + length(M).
+% Proof: If both N and P are uninstantiated, lessl(N,[_|P]) will generate
+% the infinite set, in which N is L-instantiated
+% and length(N) <= length(P).
+% The conjunction "lessl(N,[_|P]), lessl(M,[_|N])" will have only those
+% L-instantiated N such that length(M) <= length(N).
+% The predicate lessl2(P,N,M) then will produce all those L-instantiated
+% P such that length(P) <= length(N) + length(M).
+%
+% Proposition enum5: enum(N,M,P) recursively enumerates its domain.
+% Proof: similar to the above, noting that after lessl(N,[_|P]),
+% N will be L-instantiated, and so lessl(M,[_|N]) will produce all such
+% M so that length(M) <= length(N) -- and there is the finite number of
+% those, for each L-instantiated N. Similarly, for each L-instantiated
+% N and M, lessl2(P,N,M) produces all those L-instantiated P
+% so that length(P) <= length(N) + length(M) -- and again, there
+% is the finite number of those, for each L-instantiated N and M.
+
+
+mul([],_,[]).					% 0 * m = 0
+mul(N,[],[]) :- pos(N).				% n * 0 = 0, n > 0
+mul(N,[l],N) :- pos(N).				% n * 1 = n, n > 0
+
+% Now, for all the clauses below, we assert M > 1. We also know that N>0
+% This implies that width(N) < width(P)
+mul([l],M,M) :- gtl(M).				% 1 * m = m, m > 1
+
+% The first clause below uses a version of the enum() predicate.
+% We know that N,M,P must have the width at least 1, and
+% width(N) < width(P). Note that we did not write lessl2() explicitly:
+% it is implicit in the predicate mul1() (see, e.g., lessl3 below).
+
+mul(N,M,P) :-
+	gtl(M),
+	gtl(N),
+	lessl(N,P), lessl(M,[_|N]), mul1(N,M,P).
+% This clause below is to handle the case of mul(N,M,P) when
+% both N and M are instantiated and length(N) < length(M) --
+% or when P is instantiated.
+% When either (N and P) or (M and P) or all three are uninstantiated,
+% the clause above starves the clause below.
+mul(M,N,P) :-
+	gtl(M),
+	gtl(N),
+	lessl(N,P), lessl(M,N), mul1(N,M,P).
+
+% The following is just like the `mul' in the previous section.
+mul1([l],M,M) :- gtl(M).				% 1 * m = m, m > 1
+
+mul1([o|NR],M,[o|PR]) :-
+	gtl(M), pos(NR), pos(PR),
+	mul1(NR,M,PR).
+
+      % (2*nr+1) * m = 2*(n*m) + m
+      % m > 1; also nr>0 for well-formedness
+      % the result is certainly greater than 1.
+      % we note that m > 1 and so 2*(nr*m) < 2*(nr*m) + m
+      % and (floor (log2 (nr*m))) < (floor (log2 (2*(nr*m) + m)))
+      % Furthermore, (floor (log2 (* n m))) + 1 <=
+      %              (floor (log2 n)) + 1 + (floor (log2 m)) + 1
+mul1([l|NR],M,P) :-
+	gtl(M), pos(NR), gtl(P),
+	lessl3(P1,P,[l|NR],M),
+	mul1(NR,M,P1),
+	add([o|P1],M,P).
+
+
+
+%------------------------------------------------------------------------
+%                        Division
+
+% div n m q r holds iff
+% n = q*m + r
+% where 0<=r<m
+% We call the relation below 'div1' because there are other implementations
+% below.
+
+% First, handle the case n has fewer digits than m. q = 0, r = n
+% We use the test lessl(n,m) first because it is an easy test.
+% If n > 2*m, then lessl(n,m) fails quickly, and we don't need to do
+% the expensive test less(n,m).
+% Obviously, 0<=r<m is satisfied.
+div1(N,M,[],N) :- lessl(N,M), less(N,M).
+
+% Now handle the case N and M are of the same length.
+% We still can have N<M or N>=M
+div1(N,M,[l],R) :-				% N >= M
+	samel(N,M),				% N = 1*M + R, R = N - M
+	add(R,M,N),
+	less(R,M).
+div1(N,M,[],N) :-				% N < M, R=N, Q=0
+	samel(N,M),				% R < M, obviously.
+	less(N,M).
+
+% Now, N has more digits than M, so Q >0. Therefore, Q*M <= N
+% and Q*M < 2*N and so (floor (log2 (Q*M))) < (floor (log2 (2*N)))
+div1(N,M,Q,R) :-
+	lessl(M,N),
+	less(R,M),
+	lessl(P,[o|N]),
+	add(P,R,N),
+	mul(Q,M,P).
+
+% First note that div is non-recursive.
+% If N is a definite number and the first div clause does not apply then
+% div has the finite number of solutions.
+% In particular, the last clause has the finite number of solutions
+% because for a definite N, lessl(M,N), less(R,M), lessl(P,[o|N]),
+% and add(P,R,N) are all finite.
+% If N is not a definite number, then the last clause has the infinite
+% number of solutions -- but all of them are enumerable.
+
+
+% One may think that if we remove the test "lessl(M,N)" from the last
+% clause, then we don't need the three previous ones. If we did that
+% however, the following simple question (finding if dividing 5 can ever
+% give us 7)
+%     5 isb A5, 7 isb A7, div(A5,X,A7,R).
+% would diverge (rather than fail in finite time). This is because
+% when Q is a definite number greater than 1, M must be less than N.
+% If that condition is not asserted, relation less(R,M) will keep generating
+% bigger and bigger numbers. In other words, when N is definite, we
+% can no longer guarantee that div() will have the finite number of solutions.
+%
+% One may also think that we can get a simpler div() by a more rearrangement
+% of clauses:
+
+div3(N,M,Q,R) :-
+	lessl(P,[o|N]),
+	mul(Q,M,P),
+	less(R,M),
+	add(P,R,N).
+
+% This div3 too has the finite number of solutions whenever N is instantiated.
+% However, div3 does not finitely fails (rather it loops forever)
+% when we try divide by zero: div3(N,[],Q,[]).
+% The original div() doesn't have this drawback.
+% Here's another example:
+%	N=[], div(N,M,Q,R)
+% it gives one solution, with the original, `complex' implementation of
+% div -- but not for any simple, one-clause div, such as div3.
+
+% However, all is not well
+%   7 isb Q, 5 isb M, div(N,M,Q,[])
+% diverges with all divs so far, if we ask for more than 1 solution.
+% We wish that multiplication of two definite numbers, 7 and 5, gave one,
+% and only one result. So, we need a more complex div.
+
+
+
+% A faster and a more refutationally complete div algorithm
+
+% Again, div(N,M,Q,R) holds iff N = M*Q + R
+% Let l be the bit-length of r (if r=0, l=0).
+% Let n = 2^(l+1) * n1 + n2
+%     q = 2^(l+1) * q1 + q2
+% Note that n1 or q1 may be zero.
+% We obtain that
+%    n = m*q + r
+% is equivalent to the conjunction of the following two relations
+%    q2*m + r - n2 is divisible by 2^(l+1)
+%    n1 = q1*m + (q2*m + r - n2)/2^(l+1)
+% We note that by construction (see the mentioning of lessl(M,N) below)
+% all numbers in 'q2*m + r - n2' are length-limited. Therefore, we can
+% obtain the success or failure of 'q2*m + r - n2' in finite time.
+% This fact let us fail the 'div' relation, in finite time,
+% when it obviously does not hold, as in
+%	div([0|X],[o,l],Q,[l])
+% (because no even number can give the remainder 1 upon the
+% division by two).
+%
+% We should note that if n1=0, we obtain that q1 must be zero
+% (because m>0) and q2*m + r = n2. The latter can be solved in finite
+% time.
+% We also note that (q2*m + r - n2)/2^(l+1) < m
+% because r - n2 < (2^(l+1) - q2)* m
+% because 2^(l+1) - q2 >=1 and m > r by construction. Therefore, to
+% solve the relation n1 = q1*m + (q2*m + r - n2)/2^(l+1) we use
+% div itself: div(n1,m,q1,(q2*m + r - n2)/2^(l+1))
+% Thus our division algorithm is recursive. On each stage we determine at
+% least one bit of the quotient (if r=0, l=0 and q2 is either 0 or 1),
+% in finite time.
+% Chung-chieh Shan has pointed out that the present algorithm is
+% akin to the elementary school long-division algorithm, only
+% done right-to-left.
+
+% the divisor M is bigger than the dividend N: Q=0,N=R
+div(N,M,[],R) :- N = R, less(N,M).
+
+% N is at least M and certainly has the same number of digits as M
+div(N,M,[l],R) :- samel(N,M), add(R,M,N), less(R,M).
+
+% N has more digits than the divisor M.
+div(N,M,Q,R) :-
+	lessl(M,N),
+	% By the property of lessl/2, M has become L-instantiated
+	% (if it wasn't already)
+	less(R,M),
+	% By the property of less/2, R is now L-instantiated
+	pos(Q),  				% Q must be positive then
+	split(N,R,N1,N2),
+	split(Q,R,Q1,Q2),
+	(
+	    N1 = [],
+	    Q1 = [],				% q2*m + r = n2
+	    sub(N2,R,Q2M),
+	    mul(Q2,M,Q2M)			% provably terminates
+	;
+	    pos(N1),
+	    mul(Q2, M, Q2M),
+	    add(Q2M,R, Q2MR),
+	    sub(Q2MR, N2, RR),			% rr = q2*m + r - n2
+	    split(RR, R, R1, []),	        % r1 = rr/2^(l+1), evenly
+	    div(N1, M, Q1, R1)
+	).
+
+% split N R N1 N2
+% holds if n = 2^(l+1)*n1 + n2 where l = bitlength(r)
+% This relation makes sense to use only when 'r' is L-instantiated.
+% In that case, the relation has only the finite number of solutions, in
+% all of which n2 is L-instantiated.
+% We take trouble to assure that we produce only well-formed numbers:
+% the major bit must be one.
+
+split([],       _, [],    []).
+split([o,B|N], [], [B|N], []).
+split([l|N],   [], N,     [l]).
+
+split([o,B|N], [_|R], N1, [])  :- split([B|N], R, N1, []).
+split([l|N],   [_|R], N1, [l]) :- split(N, R, N1, []).
+split([B|N],   [_|R], N1, [B|N2]) :- pos(N2), split(N, R, N1, N2).
+
+
+%------------------------------------------------------------------------
+%              Exponentiation and discrete logarithm
+
+% n = b^q + r < b^(q+1)
+%
+% From the above condition we obtain the upper bound on r:
+% n >= b^q, n < b^(q+1) = b^q * b = (n-r)* b
+% r*b < n*(b-1)
+%
+% We can also obtain the bounds on q:
+% if |b| is the bitwidth of b and |n| is the bitwidth of n,
+% we have, by the definition of the bitwidth:
+%  (1) 2^(|b|-1) <= b < 2^|b|
+%  (2) 2^(|n|-1) <= n < 2^|n|
+%
+% Raising (1) to the power of q:
+%      2^((|b|-1)*q) <= b^q
+%
+% OTH, b^q <= n, and n < 2^|n|. So we obtain
+%  (3)   (|b|-1)*q < |n|
+% which defines the upper bound on |q|.
+%
+% OTH, raising (1) to the power of (q+1):
+%    b^(q+1) < 2^(|b|*(q+1))
+% But n < b^(q+1) by definition of exponentiation, and keeping in mind (1)
+% (4) |n|-1 < |b|*(q+1)
+% which is the lower bound on q.
+
+
+% When b = 2, exponentiation and discrete logarithm are easier to obtain
+% n = 2^q + r, 0<= 2*r < n
+% Here, we just relate n and q.
+%    exp2 n b q
+% holds if: n = (|b|+1)^q + r, q is the largest such number, and
+% (|b|+1) is a power of two.
+%
+% Side condition: (|b|+1) is a power of two and b is L-instantiated.
+% To obtain the binary exp/log relation, invoke the relation as
+%  (exp2 n '() q)
+% Properties: if n is L-instantiated, one solution, q is fully instantiated.
+% If q is fully instantiated: one solution, n is L-instantiated.
+% In any event, q is always fully instantiated in any solution
+% and n is L-instantiated.
+% We depend on the properties of split.
+
+exp2([l],_,[]).					% 1 = b^0
+exp2(N,B,[l]) :- gtl(N), split(N,B,[l],_).      % n = (|b|+1)^1 + r
+
+exp2(N,B,[o|Q1]) :- 				% n = (2^k)^(2*q) + r
+	pos(Q1),				%   = (2^(2*k))^q + r
+	lessl(B,N),
+	append(B,[l|B],B2),
+	exp2(N,B2,Q1).
+exp2(N,B,[l|Q1]) :-				% n = (2^k)^(2*q+1) + r
+	pos(Q1),                                % n/(2^k) = (2^(2*k))^q + r'
+	pos(N1),
+	split(N,B,N1,_),
+	append(B,[l|B],B2),
+	exp2(N1,B2,Q1).
+
+
+% nq = n^q where n is L-instantiated and q is fully instantiated
+repeated_mul([_|_],[],[l]).			% n^0 = 1 where n > 0
+repeated_mul(N,[l],N).				% n^1 = 1
+repeated_mul(N,Q,NQ) :-
+	gtl(Q), add(Q1,[l],Q),
+	repeated_mul(N,Q1,NQ1),
+	mul(NQ1,N,NQ).
+
+% We call this predicate log rather than exp due to its close similarity
+% to div. As the tests at the end show, log can be used for determining
+% the exact discrete logarithm, logarithm with a residual, exponentiation,
+% and the n-th root.
+
+log([l],B,[],[]) :- pos(B).			% 1 = b^0 + 0, b >0
+log(N,B,[],R) :- pos(R), less(N,B), add(R,[l],N). % n = b^0 + (n-1)
+
+log(N,B,[l],R) :- 			    % n = b + r, n and b the same sz
+	gtl(B), samel(N,B), add(R,B,N).
+
+log(N,[l],Q,R) :- pos(Q), add(R,[l],N).		% n = 1^q + (n-1), q>0
+log(N,[],Q,N)  :- pos(Q).			% n = 0^q + n, q>0
+
+      % in the rest, n is longer than b
+log(N,[o,l],Q,R) :-				% b = 2
+	pos(N1),
+	N = [_,_|N1],                           % n is at least 4
+        exp2(N,[],Q),		     % that will L-instantiate n and n1
+	split(N,N1,_,R).
+
+log(N,B,Q,R) :-					% the general case
+	(B = [l,l]; B = [_,_,_|_]),		% B >= 3
+	lessl(B,N),			% b becomes L-instantiated
+	                                % If b was L-instantiated, the previous
+					% goal had only *one* solution
+	exp2(B,[],Bw1),
+	add(Bw1,[l],Bw),
+	lessl(Q,N),			% A _very_ lose bound, but makes
+					% sure q will be L-instantiated
+					% Now, we can use b and q to bound n
+					% |n|-1 < |b|*(q+1)
+	add(Q,[l],Q1),
+	mul(Bw,Q1,Bwq1),	        % |b|*(q+1)
+        less(Nw1, Bwq1),
+
+	exp2(N,[],Nw1),			% n becomes L-instantiated
+					% Now we have only finite number of ans
+	add(Nw1,[l],Nw),
+	div(Nw, Bw, Ql1, _),		% low boundary on q:
+	add(Ql,[l],Ql1),		% |n| = |b|(ql+1) + c
+	(samel(Q,Ql); lessl(Ql,Q)),     % Tighten the estimate for q
+	repeated_mul(B,Ql,Bql),	        % bql = b^ql
+	div(Nw,Bw1,Qh,_),		% upper boundary on q-1
+	add(Ql,Qdh,Qh),
+	add(Ql,Qd,Q),
+	(Qd = Qdh; less(Qd,Qdh)),       % qd is bounded
+	repeated_mul(B,Qd,Bqd),	        % b^qd
+	mul(Bql,Bqd,Bq),		% b^q
+	mul(B,  Bq, Bq1),		% b^(q+1)
+	add(Bq,R,N),
+	less(N, Bq1).			% check the r condition
+
+
+
+%----------------------------------------------------------------------
+% Tests
+
+
+% A simple unit testing framework
+shln(N) :- N isb R, print(R), nl.
+
+sh1(L,LR) :- maplist((isb),LR,L).
+sh2(L,LR) :- maplist(sh1,L,LR).
+
+okn(B,N) :- N1 isb B, N1 =:= N *-> (print('as expected: '),print(N),nl);
+	    throw(mismatch(B,N)).
+
+okt(T1,T2) :- T1 = T2 *-> (print('as expected: '),print(T1),nl);
+	    throw(mismatch(T1,T2)).
+
+should_fail(G) :- G, !, throw(should_have_failed(G)).
+should_fail(_).
+
+
+
+?- nl, print('Addition'), nl.
+?- 29 isb A29, 3 isb A3, add(A29,A3,X), okn(X,32).
+?- 29 isb A29, 3 isb A3, add(A3,X,A29), okn(X,26).
+?- 29 isb A29, 3 isb A3, add(X,A3,A29), okn(X,26).
+?- 29 isb A29, 3 isb A3, should_fail(add(_,A29,A3)).
+?- print('all numbers that sum to 6'), nl.
+?- 6 isb A6, findall([X,Y],add(X,Y,A6),R), sh2(R,LR),
+	okt(LR,[[6, 0], [0, 6], [1, 5], [5, 1], [2, 4], [4, 2], [3, 3]]).
+?- print('a few numbers such as X + 1 = Y'), nl.
+?- call_with_depth_limit((add(X,[l],Y),print([X,Y]), nl, fail),10,_).
+
+% Especially note the third line: 2*x and 2*x +1 are successors, for all x>0!
+% [[], [l]]
+% [[l], [o, l]]
+% [[o, _G523|_G524], [l, _G523|_G524]]
+% [[l, l], [o, o, l]]
+% [[l, o, _G538|_G539], [o, l, _G538|_G539]]
+% [[l, l, l], [o, o, o, l]]
+% [[l, l, o, _G547|_G548], [o, o, l, _G547|_G548]]
+
+?- nl, print('Subtraction'), nl.
+?- 29 isb A29, 3 isb A3, sub(A29,A3,X), okn(X,26).
+?- 29 isb A29, 3 isb A3, sub(A29,X,A3), okn(X,26).
+?- 26 isb A26, 3 isb A3, sub(X,A3,A26), okn(X,29).
+?- 29 isb A29,           sub(A29,A29,X), okn(X,0).
+?- 29 isb A29, 30 isb A30, should_fail(sub(A29,A30,_)).
+
+?- print('a few numbers such as Y - Z = 4'), nl.
+?- call_with_depth_limit((sub(Y,Z,[o,o,l]),print([Y,Z]), nl, fail),10,_).
+
+?- print('a few numbers such as X - Y = Z'), nl.
+%?- call_with_depth_limit((sub(X,Y,Z),print([X,Y,Z]), nl, fail),10,_).
+?- call_with_depth_limit(findall([X,Y,Z],sub(X,Y,Z),R),8,_),
+	print(R), nl.
+
+?- nl, print('Comparisons'), nl.
+?- 4 isb A4, less(X,A4), okn(X,0).
+?- 40 isb A40, 42 isb A42, less(A40,A42).
+?- 40 isb A40, 42 isb A42, should_fail(less(A42,A40)).
+?- 6 isb A6, findall(Z,(less(Z,A6)),R), sh1(R,LR),
+	okt(LR,[0, 1, 5, 2, 4, 3]).
+
+?- print('a few numbers that are greater than 4'), nl.
+?- call_with_depth_limit((less([o,o,l],Y),print(Y), nl, fail),7,_).
+% [l, o, l]
+% [o, o, o, l]
+% [o, l, o, l]
+% [l, o, o, l]
+% [l, l, o, l]
+
+?- nl, print('Multiplication'), nl.
+?- 2 isb A2, 3 isb A3, mul(A2,A3,X), okn(X,6).
+?- 12 isb A12, 3 isb A3, mul(A3,X,A12), okn(X,4).
+?- 12 isb A12, 3 isb A3, mul(X,A3,A12), okn(X,4).
+?- 12 isb A12, 5 isb A5, should_fail(mul(_,A5,A12)).
+?- print('All factors of 24'), nl.
+?- 24 isb A24, findall([X,Y],mul(X,Y,A24),R),
+	sh2(R,LR),
+	okt(LR,[[24, 1], [1, 24], [4, 6], [6, 4], [8, 3],
+	        [12, 2], [3, 8], [2, 12]]).
+?- print('2 * 3 must produce only one solution'), nl.
+?- 2 isb A2, 3 isb A3, findall(Z,mul(A2,A3,Z),R),
+	sh1(R,LR), okt(LR,[6]), nl.
+
+
+?- nl, print('a few numbers such as 3*X = Y'), nl.
+?- call_with_depth_limit((mul([l,l],X,Y),print([X,Y]), nl, fail),9,_).
+
+?- nl, print('a few numbers such as X*3 = Y'), nl.
+?- call_with_depth_limit((mul(X,[l,l],Y),print([X,Y]), nl, fail),7,_).
+
+?- nl, print('a few numbers such as X*Y = Z'), nl.
+?- call_with_depth_limit((mul(X,Y,Z),print([X,Y,Z]), nl, fail),5,_).
+
+
+?- nl, print('Recursive enumerability of multiplication'), nl.
+?- mul(X,[l,l],Y),X=[l,l], okn(Y,9).
+?- mul(X,[l,l],Y),Y=[l,o,o,l], okn(X,3).
+?- X=[l,l], mul(X,[l,l],Y), okn(Y,9).
+?- mul(N,M,P), (N=[l, o, l], M=[o, l, o, o, l, o, l];
+                M=[l, o, l], N=[o, l, o, o, l, o, l]), okn(P,410).
+
+?- print('Test to see that mul(X,Y,Z) contains all numbers '),
+   print('such as X*Y=Z, Y<=X'), nl.
+et(I,J,P) :- mul(X,Y,Z), (X = I, Y = J; X = J, Y = I), Z = P,
+	sh1([X,Y,Z],R), print(R), nl, !.
+et(L) :- less(I,L), less(J,L), et(I,J,_), fail.
+et(_).
+?- 8 isb L, et(L).
+
+?- nl, print('All Factorizations of 16565'), nl.
+%?- 16565 isb A,mul(Y,Z,A), sh1([Y,Z],L), print(L), nl, fail.
+?- nl, print('Finding all non-primitive factors of 16567'), nl.
+%?- time((16567 isb A,mul(Y,Z,A), gtl(Y), gtl(Z), sh1([Y,Z],L))).
+% 63,953,351 inferences in 32.09 seconds (1992704 Lips)
+% The recursively enumerating mul is slower:
+%?- time((16567 isb A,mul(Y,Z,A), gtl(Y), gtl(Z), sh1([Y,Z],L))).
+% SWI-Prolog, Version 5.0:
+% 453,383,545 inferences in 183.55 seconds (2470124 Lips)
+% SWI-Prolog, Version 5.4.5:
+% 453,383,551 inferences, 163.80 CPU in 164.60 seconds (100% CPU, 2767830 Lips)
+
+?- nl, print('Split'), nl.
+?- 4 isb A4, findall(Z,(Z=((N1,N2)),split(A4,[],N1,N2)),R),
+	okt(R, [([o,l],[])]).
+?- 4 isb A4, findall(Z,(Z=((N1,N2)),split(A4,[l],N1,N2)),R),
+	okt(R, [([l],[])]).
+?- 4 isb A4, findall(Z,(Z=((N1,N2)),split(A4,[l,l],N1,N2)),R),
+	okt(R, [([],[o,o,l])]).
+?- 4 isb A4, findall(Z,(Z=((N1,N2)),split(A4,[l,l,l],N1,N2)),R),
+	okt(R, [([],[o,o,l])]).
+?- 5 isb A5, findall(Z,(Z=((N1,N2)),split(A5,[l],N1,N2)),R),
+	okt(R, [([l],[l])]).
+?- 5 isb A5, findall(N,split(N,A5,[],[l]),R),
+	okt(R, [ [l] ]).
+
+?- nl, print('Division'), nl.
+?- 2 isb A2, 4 isb A4, div(A4,A2,X,R), sh1([X,R],L), okt(L,[2,0]).
+?- print('division by zero must fail.'), nl.
+?-           4 isb A4, should_fail(div(A4,[],_,_)).
+?-           4 isb A4, div(A4,A4,X,R), sh1([X,R],L), okt(L,[1,0]).
+?- 3 isb A3, 4 isb A4, div(A4,A3,X,R), sh1([X,R],L), okt(L,[1,1]).
+?- 5 isb A5, 4 isb A4, div(A4,A5,X,R), sh1([X,R],L), okt(L,[0,4]).
+?- 2 isb A2, 5 isb A5, div(A5,A2,X,R), sh1([X,R],L), okt(L,[2,1]).
+
+?- 3 isb A3, 33 isb A33, div(A33,A3,X,R), sh1([X,R],L), okt(L,[11,0]).
+?- 11 isb A11, 33 isb A33, div(A33,X,A11,R), sh1([X,R],L), okt(L,[3,0]).
+?- 11 isb A11,  3 isb A3,  div(X,A3,A11,R), sh1([X,R],L), okt(L,[33,0]).
+?- 5  isb A5, 33 isb A33, div(A33,A5,X,R), sh1([X,R],L), okt(L,[6,3]).
+?- 5 isb A5, 7 isb A7, should_fail(div(A5,_,A7,_)).
+% Cannot divide anything by 5 and get 5 in the remainder.
+?- 5 isb A5, should_fail(div(_,A5,_,A5)).
+
+?- nl, print('all numbers such as 5/Z = 1'), nl.
+?- 1 isb A1, 5 isb A5, findall(Z,div(A5,Z,A1,_),R),
+	sh1(R,LR), okt(LR,[5, 4, 3]).
+?- nl, print('all inexact factorizations of 24'), nl.
+?- 24 isb A24, findall([M,Q,Res],(lessl(M,A24),div(A24,M,Q,Res)),R),
+	sh2(R,LR),
+	okt(LR,[[1, 24, 0], [3, 8, 0], [2, 12, 0], [6, 4, 0], [4, 6, 0],
+	        [5, 4, 4], [7, 3, 3], [12, 2, 0], [8, 3, 0], [14, 1, 10],
+		[10, 2, 4], [13, 1, 11], [15, 1, 9], [11, 2, 2], [9, 2, 6]]).
+
+?- nl, print('Even divide'), nl.
+?- call_with_depth_limit((div([l|Y],[o,l],Q,R),print([Y,Q,R]), nl, fail),7,_).
+
+?- nl, print('a few numbers such as N = M*Q+R'), nl.
+?- call_with_depth_limit((div(N,M,Q,R),print([N,M,Q,R]), nl, fail),6,_).
+
+?- nl, print('N=[], div(N,M,Q,R) gives only one solution!'), nl.
+?- findall([M,Q,Res],(N=[], div(N,M,Q,Res)),R),
+	okt(R,[[[_G386|_G387], [], []]]).
+
+% The following diverges for simpler division algorithms, such as
+% div1/4 and div3/4
+?- nl, print('N = 5*7+0 should definitely have only one solution.'), nl.
+?- 7 isb Q, 5 isb M, R = [], findall(N,div(N,M,Q,R),NS),
+	sh1(NS,RR), okt(RR,[35]).
+?- nl, print('even number divided by 2 cannot give 1 in the remainder'), nl.
+?- should_fail(div([o|_],[o,l],_,[l])).
+?- nl, print('odd number divided by 2 cannot give 0 in the remainder'), nl.
+?- should_fail(div([l,o|_],[o,l],_,[])).
+
+?- nl, print('Binary exponentiation and logarithm'), nl.
+?- findall(Q,exp2([l,l,l,l],[],Q),QS), okt(QS,[[l,l]]).
+?- findall(Q,exp2([l,o,l,l,l],[],Q),QS), okt(QS,[[o,o,l]]).
+?- nl, print('_all_ numbers n such that n = 2^5 + r'), nl.
+?- 5 isb A5, findall(N,exp2(N,[],A5),NS),
+	okt(NS,[[o, o, o, o, o, l], [o, l, o, o, o, l],
+	        [o, _G924, l, o, o, l], [o, _G945, _G948, l, o, l],
+		[o, _G966, _G969, _G972, l, l], [l, o, o, o, o, l],
+		[l, l, o, o, o, l], [l, _G1029, l, o, o, l],
+		[l, _G1050, _G1053, l, o, l],
+		[l, _G1071, _G1074, _G1077, l, l]]).
+?- nl, print('a few numbers such as N = 2^Q+R'), nl.
+?- call_with_depth_limit((exp2(N,[],R),sh1([N,R],P), print(P),nl, fail),9,_).
+
+?- nl, print('Exponentiation, logarithm, and base determination'), nl.
+?- print('Solving 15 = B^Q + R for different B'), nl.
+?- 15 isb A15, 2 isb B,
+	findall([Q,R],log(A15,B,Q,R),RS), sh2(RS,P),okt(P,[[3,7]]).
+?- 15 isb A15, 3 isb B,
+	findall([Q,R],log(A15,B,Q,R),RS), sh2(RS,P),okt(P,[[2,6]]).
+?- 15 isb A15, 4 isb B,
+	findall([Q,R],log(A15,B,Q,R),RS), sh2(RS,P),okt(P,[[1,11]]).
+?- 15 isb A15, 5 isb B,
+	findall([Q,R],log(A15,B,Q,R),RS), sh2(RS,P),okt(P,[[1,10]]).
+?- 15 isb A15, 15 isb B,
+	findall([Q,R],log(A15,B,Q,R),RS), sh2(RS,P),okt(P,[[1,0]]).
+?- 15 isb A15, 16 isb B,
+	findall([Q,R],log(A15,B,Q,R),RS), sh2(RS,P),okt(P,[[0,14]]).
+
+?- print('Solving 32 = B^Q + R for different B'), nl.
+?- 32 isb A32, 2 isb B,
+	findall([Q,R],log(A32,B,Q,R),RS), sh2(RS,P),okt(P,[[5,0]]).
+?- 32 isb A32, 3 isb B,
+	findall([Q,R],log(A32,B,Q,R),RS), sh2(RS,P),okt(P,[[3,5]]).
+?- 32 isb A32, 4 isb B,
+	findall([Q,R],log(A32,B,Q,R),RS), sh2(RS,P),okt(P,[[2,16]]).
+?- 32 isb A32, 5 isb B,
+	findall([Q,R],log(A32,B,Q,R),RS), sh2(RS,P),okt(P,[[2,7]]).
+?- 32 isb A32, 6 isb B,
+	findall([Q,R],log(A32,B,Q,R),RS), sh2(RS,P),okt(P,[[1,26]]).
+
+?- print('Finding all B such that 15 = B^3 + R'), nl.
+?- 15 isb A15, 3 isb Q,
+	findall([B,R],log(A15,B,Q,R),RS), sh2(RS,P),
+	okt(P,[[1, 14], [0, 15], [2, 7]]).
+?- print('Finding all B such that 32 = B^4 + R'), nl.
+?- 32 isb N, 4 isb Q,
+	findall([B,R],log(N,B,Q,R),RS), sh2(RS,P),
+	okt(P,[[1, 31], [0, 32]]).
+?- print('Finding all B such that 33 = B^5 + R'), nl.
+?- 33 isb N, 5 isb Q,
+	findall([B,R],log(N,B,Q,R),RS), sh2(RS,P),
+	okt(P,[[1, 32], [0, 33], [2, 1]]).
+
+?- nl, print('Given specific Q, B, R find all N = B^Q + R'), nl.
+?- 1 isb B, 2 isb Q, 0 isb R,
+	findall(N,log(N,B,Q,R),RS), sh1(RS,P),okt(P,[1]).
+?- 2 isb B, 5 isb Q, 1 isb R,
+	findall(N,log(N,B,Q,R),RS), sh1(RS,P),okt(P,[33]).
+?- 3 isb B, 2 isb Q, 1 isb R,
+	findall(N,log(N,B,Q,R),RS), sh1(RS,P),okt(P,[10]).
+?- 3 isb B, 3 isb Q, 1 isb R,
+	findall(N,log(N,B,Q,R),RS), sh1(RS,P),okt(P,[28]).
+?- 3 isb B, 3 isb Q, 5 isb R,
+	findall(N,log(N,B,Q,R),RS), sh1(RS,P),okt(P,[32]).
+?- nl, print('a few numbers such as N = 3^Q+R'), nl.
+?- 3 isb B, call_with_depth_limit((log(N,B,Q,R),sh1([N,B,Q,R],P),
+	print(P),nl, fail),11,_).
+?- nl, print('a few numbers such as N = B^3+R'), nl.
+?- 3 isb Q, call_with_depth_limit((log(N,B,Q,R),sh1([N,B,Q,R],P),
+	print(P),nl, fail),9,_).
+
+?- nl, print('All done'), nl.

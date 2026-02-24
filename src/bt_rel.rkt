@@ -1,0 +1,138 @@
+#lang racket
+(require minikanren)
+(provide (all-defined-out))
+
+(defrel (trito t)
+  (conde
+    [(== t 'T)]
+    [(== t '0)]
+    [(== t '1)]))
+
+(defrel (add3o a b cin s cout)
+  (conde
+    [(== a 'T) (== b 'T) (== cin 'T) (== s '0) (== cout 'T)]
+    [(== a 'T) (== b 'T) (== cin '0) (== s '1) (== cout 'T)]
+    [(== a 'T) (== b 'T) (== cin '1) (== s 'T) (== cout '0)]
+
+    [(== a 'T) (== b '0) (== cin 'T) (== s '1) (== cout 'T)]
+    [(== a 'T) (== b '0) (== cin '0) (== s 'T) (== cout '0)]
+    [(== a 'T) (== b '0) (== cin '1) (== s '0) (== cout '0)]
+
+    [(== a 'T) (== b '1) (== cin 'T) (== s 'T) (== cout '0)]
+    [(== a 'T) (== b '1) (== cin '0) (== s '0) (== cout '0)]
+    [(== a 'T) (== b '1) (== cin '1) (== s '1) (== cout '0)]
+
+    [(== a '0) (== b 'T) (== cin 'T) (== s '1) (== cout 'T)]
+    [(== a '0) (== b 'T) (== cin '0) (== s 'T) (== cout '0)]
+    [(== a '0) (== b 'T) (== cin '1) (== s '0) (== cout '0)]
+
+    [(== a '0) (== b '0) (== cin 'T) (== s 'T) (== cout '0)]
+    [(== a '0) (== b '0) (== cin '0) (== s '0) (== cout '0)]
+    [(== a '0) (== b '0) (== cin '1) (== s '1) (== cout '0)]
+
+    [(== a '0) (== b '1) (== cin 'T) (== s '0) (== cout '0)]
+    [(== a '0) (== b '1) (== cin '0) (== s '1) (== cout '0)]
+    [(== a '0) (== b '1) (== cin '1) (== s 'T) (== cout '1)]
+
+    [(== a '1) (== b 'T) (== cin 'T) (== s 'T) (== cout '0)]
+    [(== a '1) (== b 'T) (== cin '0) (== s '0) (== cout '0)]
+    [(== a '1) (== b 'T) (== cin '1) (== s '1) (== cout '0)]
+
+    [(== a '1) (== b '0) (== cin 'T) (== s '0) (== cout '0)]
+    [(== a '1) (== b '0) (== cin '0) (== s '1) (== cout '0)]
+    [(== a '1) (== b '0) (== cin '1) (== s 'T) (== cout '1)]
+
+    [(== a '1) (== b '1) (== cin 'T) (== s '1) (== cout '0)]
+    [(== a '1) (== b '1) (== cin '0) (== s 'T) (== cout '1)]
+    [(== a '1) (== b '1) (== cin '1) (== s '0) (== cout '1)]))
+
+(defrel (full-addero cin a b s cout)
+  (add3o a b cin s cout))
+
+(defrel (negtrito t nt)
+  (conde
+    [(== t 'T) (== nt '1)]
+    [(== t '0) (== nt '0)]
+    [(== t '1) (== nt 'T)]))
+
+(defrel (nego x y)
+  (conde
+    [(== '() x) (== '() y)]
+    [(fresh (a d na nd)
+       (== `(,a . ,d) x)
+       (== `(,na . ,nd) y)
+       (negtrito a na)
+       (nego d nd))]))
+
+(defrel (add-carryo x y cin z)
+  (conde
+    [(== '() x) (== '() y)
+     (conde
+       [(== cin '0) (== '() z)]
+       [(== cin '1) (== '(1) z)]
+       [(== cin 'T) (== '(T) z)])]
+    [(== '() x)
+     (fresh (b yrest s cout zrest)
+       (== `(,b . ,yrest) y)
+       (sum-trim0o s zrest z)
+       (add3o '0 b cin s cout)
+       (add-carryo '() yrest cout zrest))]
+    [(== '() y)
+     (fresh (a xrest s cout zrest)
+       (== `(,a . ,xrest) x)
+       (sum-trim0o s zrest z)
+       (add3o a '0 cin s cout)
+       (add-carryo xrest '() cout zrest))]
+    [(fresh (a xrest b yrest s cout zrest)
+       (== `(,a . ,xrest) x)
+       (== `(,b . ,yrest) y)
+       (sum-trim0o s zrest z)
+       (add3o a b cin s cout)
+       (add-carryo xrest yrest cout zrest))]))
+
+;; Construct z from s and zrest, trimming a trailing zero at the most-significant end.
+(defrel (sum-trim0o s zrest z)
+  (conde
+    [(== zrest '()) (== s '0) (== z '())]
+    [(== z `(,s . ,zrest))
+     (conde
+       [(=/= s '0)]
+       [(fresh (a d) (== zrest `(,a . ,d)))])]))
+
+(defrel (pluso x y z)
+  (add-carryo x y '0 z))
+
+(defrel (minuso x y z)
+  (fresh (ny)
+    (nego y ny)
+    (pluso x ny z)))
+
+(defrel (mul1o x b out)
+  (conde
+    [(== b '0) (== out '())]
+    [(== b '1) (== out x)]
+    [(== b 'T) (nego x out)]))
+
+(defrel (*o x y z)
+  (conde
+    [(== '() x) (== '() z)]
+    [(== '() y) (== '() z)]
+    [(fresh (b0 yrest xb0 xyrest)
+       (== `(,b0 . ,yrest) y)
+       (mul1o x b0 xb0)
+       (*o x yrest xyrest)
+       (pluso xb0 `(0 . ,xyrest) z)
+       (canco z))]))
+
+;; Canonical: empty or last digit nonzero.
+(defrel (canco bt)
+  (conde
+    [(== bt '())]
+    [(fresh (d rest)
+       (== bt (cons d rest))
+       (trito d)
+       (conde
+         [(== rest '()) (=/= d '0)]
+         [(fresh (a b)
+            (== rest `(,a . ,b))
+            (canco rest))]))]))

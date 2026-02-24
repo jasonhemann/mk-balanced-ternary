@@ -1,0 +1,14 @@
+# Documentation Map
+
+This directory separates normative requirements from planning and explanatory notes.
+
+- `SPEC.md`
+  - Normative source of truth for balanced-ternary representation, relations, operational expectations, and acceptance contract.
+- `ROADMAP.md`
+  - Phase sequencing and planning priorities.
+- `FASTER_MINIKANREN.md`
+  - Backend syntax and coding discipline notes for faster-miniKanren usage.
+- `INTEROP.md`
+  - Future strategy for mixed-representation arithmetic and translation.
+
+When documents differ, `SPEC.md` is authoritative.
