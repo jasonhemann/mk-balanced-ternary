@@ -12,6 +12,7 @@ Composition:
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)
   - `bt_div_mode_matrix_test.rkt` (bounded Euclidean division mode matrix across grounding patterns)
+  - `bt_div_exhaustive_mode_test.rkt` (exhaustive bounded `run*` mode checks for `divo`, including denotational set equality vs host semantics)
   - `bt_signed_valence_test.rkt` (explicit negative/positive crossing cases for `pluso`, `minuso`, `*o`, `divo`)
   - `bt_finite_failure_test.rkt` (bounded finite-failure matrix for `pluso`, `minuso`, `*o`, `divo`)
   - `bt_totality_test.rkt` (bounded completeness/totality checks, including all factor pairs for 12)

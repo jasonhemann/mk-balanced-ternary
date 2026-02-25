@@ -93,6 +93,7 @@ Current surface note:
 Current fast-suite coverage for division:
 - `test/bt_order_div_test.rkt`: denotational Euclidean checks and deterministic ground cases.
 - `test/bt_div_mode_matrix_test.rkt`: bounded grounding-mode matrix.
+- `test/bt_div_exhaustive_mode_test.rkt`: bounded exhaustive `run*` mode checks with host-denotation equality.
 - `test/bt_finite_failure_test.rkt`: bounded finite-failure mode matrix.
 - `test/bt_signed_valence_test.rkt`: cross-sign regression cases.
 
