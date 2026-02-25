@@ -47,7 +47,7 @@ The following relations are required:
 
 - `minuso x y z`
   - Difference relation: `x - y = z`.
-  - Defined via `pluso` and `nego`.
+  - Preferred relational form: `pluso y z x` (no required intermediate negation goal).
 
 - `mul1o x trit out`
   - Multiply balanced-ternary integer `x` by a trit in `{ 'T, '0, '1 }`.

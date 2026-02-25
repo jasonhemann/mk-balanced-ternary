@@ -107,9 +107,7 @@
   (add-carryo x y '0 z))
 
 (defrel (minuso x y z)
-  (fresh (ny)
-    (nego y ny)
-    (pluso x ny z)))
+  (pluso y z x))
 
 (defrel (mul1o x b out)
   (conde

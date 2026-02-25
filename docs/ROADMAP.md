@@ -57,6 +57,12 @@ Progress:
 - Implemented: promoted Euclidean `divo` as the primary division relation surface (with `divo-boundedo` compatibility alias).
 - Next: add assurance-level larger-bound `divo` completeness/termination checks mirroring the new exhaustive fast-suite structure.
 
+Immediate worklist (API-shape and relationality cleanup):
+- Remove exposed bound parameter from the public Euclidean division surface (target public arity: `divo n m q r`).
+- Move required bound/canonical constraints inside the arithmetic relation implementation path, so callers are not forced to add extra conjunctions for core arithmetic behavior.
+- Keep deterministic ground canonical behavior while documenting partial-term behavior explicitly (ground uniqueness vs. open-term denotation).
+- After the above refactor, re-run and tighten mode/termination matrices against the public arities.
+
 ### M2 Ordering (optional)
 - Add bounded ordering relations (for example, `<o`, `<=o`) with explicit max-digit bound parameters.
 - Keep unbounded var/var ordering out of scope unless a separate strategy is approved.
