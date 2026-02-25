@@ -223,7 +223,9 @@
 
 (defrel (logo n b q r)
   (conde
-    [(== '(1) n) (poso b) (== '() q) (== '() r)]
+    ;; For n=1 with q=r=0, the canonical base is b=1.
+    ;; Using (poso b) here over-approximates and overlaps with later branches.
+    [(== '(1) n) (== '(1) b) (== '() q) (== '() r)]
     [(== '() q) (<o n b) (pluso r '(1) n)]
     [(== '(1) q) (gt1o b) (=lo n b) (pluso r b n)]
     [(== '(1) b) (poso q) (pluso r '(1) n)]

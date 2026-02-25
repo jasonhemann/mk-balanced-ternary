@@ -20,7 +20,7 @@ raco test test
 Run slow assurance tests:
 
 ```sh
-raco test assurance/slow_assurance_test.rkt
+raco test assurance
 ```
 
 ## Repository map
@@ -29,6 +29,9 @@ Core balanced-ternary track:
 - `src/bt_rel.rkt` - primary relation implementation target.
 - `src/bt_oracle.rkt` - host oracle conversions used by tests.
 - `test/bt_rel_test.rkt` - primary balanced-ternary regression tests.
+- `test/bt_harness_primitive_test.rkt` and `test/bt_harness_ops_test.rkt` - BT harness parity checks against the oracle.
+- `test/bt_mode_bounds_test.rkt` - bounded mode/groundedness matrix checks through `*o`.
+- `test/bt_order_div_test.rkt` - bounded ordering and Euclidean division semantics checks.
 
 Legacy baseline track:
 - `src/binary-numbers.rkt` - binary miniKanren arithmetic baseline.
@@ -40,6 +43,8 @@ Reference artifacts:
 
 Assurance:
 - `assurance/slow_assurance_test.rkt` - heavy randomized checks and bounded timeout assertions.
+- `assurance/bn_harness_divergence_test.rkt` - binary harness divergence and slower `/o` assurance checks.
+- `assurance/bt_harness_assurance_test.rkt` - heavier seeded BT harness checks.
 
 Documentation:
 - `docs/SPEC.md` - normative arithmetic and operational contract.

@@ -16,7 +16,7 @@ Focus:
 
 Exit criteria:
 - Fast suite (`raco test test`) passes.
-- Slow assurance suite (`raco test assurance/slow_assurance_test.rkt`) passes.
+- Slow assurance suite (`raco test assurance`) passes.
 - Any current gaps are tracked as explicit follow-up tasks.
 
 ## Planned follow-on phases
@@ -26,10 +26,27 @@ Exit criteria:
 - Include deterministic bounded checks, randomized checks, partial-term bounded cases, and explicit divergence classification.
 - Treat harness behavior as a confidence gate before adding balanced-ternary comparison layers.
 
+Current status:
+- Implemented: `test/support/bn_harness.rkt` with deterministic and randomized checks, classification, and warning logging.
+- Implemented: fast/slow split for harness tests (`test/` vs `assurance/`), including seeded slow `/o` assurance and divergence checks.
+- Completed: removed harness-only self-check fixtures from regression/assurance suites.
+
 ### M1.5 Operational profile hardening
 - Expand mode behavior notes per relation.
 - Ensure bounded inverse-mode expectations are explicit in tests.
 - Add targeted regression cases for known divergence shapes.
+
+Suggested immediate next step:
+- Start balanced-ternary harness parity:
+  - add BT-side deterministic/randomized ground checks against `bt_oracle.rkt`,
+  - add bounded inverse-mode checks mirroring the binary harness structure,
+  - split BT fast vs assurance checks from the start to avoid rework.
+
+Progress:
+- Started: BT harness skeleton added with fast (`test/bt_harness_*.rkt`) and assurance (`assurance/bt_harness_assurance_test.rkt`) tracks.
+- Implemented: bounded BT mode-matrix tests through `*o` (`test/bt_mode_bounds_test.rkt`) covering all grounding patterns under explicit digit-length bounds.
+- Implemented: bounded ordering/absolute/division kernel (`lto-boundedo`, `abso-boundedo`, `divo-boundedo`) with Euclidean remainder tests in `test/bt_order_div_test.rkt`.
+- Next: improve operational profile of bounded `divo` (broader inverse-mode matrices and tighter bound propagation).
 
 ### M2 Ordering (optional)
 - Add bounded ordering relations (for example, `<o`, `<=o`) with explicit max-digit bound parameters.

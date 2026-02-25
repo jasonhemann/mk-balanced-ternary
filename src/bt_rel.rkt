@@ -64,6 +64,9 @@
        (negtrito a na)
        (nego d nd))]))
 
+(defrel (negateo x y)
+  (nego x y))
+
 (defrel (add-carryo x y cin z)
   (conde
     [(== '() x) (== '() y)
@@ -136,3 +139,91 @@
          [(fresh (a b)
             (== rest `(,a . ,b))
             (canco rest))]))]))
+
+;; Length-bounded canonical BT numeral. The bound is represented as a
+;; ground list, and the numeral length must be <= the bound length.
+(defrel (len<=o bt bound)
+  (conde
+    [(== bt '())]
+    [(fresh (d rest brest marker)
+       (== bt `(,d . ,rest))
+       (trito d)
+       (== bound `(,marker . ,brest))
+       (len<=o rest brest))]))
+
+(defrel (bto-boundedo bt bound)
+  (len<=o bt bound)
+  (canco bt))
+
+(defrel (zeroo n)
+  (== n '()))
+
+;; Return the current digit and remaining tail, treating exhausted numerals as 0.
+(defrel (digit-stepo n d rest)
+  (conde
+    [(== n '()) (== d '0) (== rest '())]
+    [(fresh (a r)
+       (== n `(,a . ,r))
+       (trito a)
+       (== d a)
+       (== rest r))]))
+
+(defrel (digit<o a b)
+  (conde
+    [(== a 'T) (== b '0)]
+    [(== a 'T) (== b '1)]
+    [(== a '0) (== b '1)]))
+
+(defrel (eq-boundedo x y bound)
+  (conde
+    [(== bound '())]
+    [(fresh (h t dx dy xr yr)
+       (== bound `(,h . ,t))
+       (digit-stepo x dx xr)
+       (digit-stepo y dy yr)
+       (== dx dy)
+       (eq-boundedo xr yr t))]))
+
+;; Strict total order over BT numerals constrained by a shared digit-length bound.
+(defrel (lto-boundedo x y bound)
+  (fresh (h t dx dy xr yr)
+    (== bound `(,h . ,t))
+    (digit-stepo x dx xr)
+    (digit-stepo y dy yr)
+    (conde
+      [(lto-boundedo xr yr t)]
+      [(eq-boundedo xr yr t)
+       (digit<o dx dy)])))
+
+(defrel (poso-boundedo n bound)
+  (bto-boundedo n bound)
+  (lto-boundedo '() n bound))
+
+(defrel (nneg-boundedo n bound)
+  (bto-boundedo n bound)
+  (conde
+    [(== n '())]
+    [(poso-boundedo n bound)]))
+
+(defrel (abso-boundedo n a bound)
+  (conde
+    [(nneg-boundedo n bound)
+     (== a n)]
+    [(lto-boundedo n '() bound)
+     (negateo n a)
+     (nneg-boundedo a bound)]))
+
+;; Euclidean division over bounded BT integers:
+;; n = m*q + r, m != 0, and 0 <= r < |m|.
+(defrel (divo-boundedo n m q r bound)
+  (bto-boundedo n bound)
+  (bto-boundedo m bound)
+  (bto-boundedo q bound)
+  (bto-boundedo r bound)
+  (=/= m '())
+  (fresh (prod am)
+    (*o m q prod)
+    (pluso prod r n)
+    (abso-boundedo m am bound)
+    (nneg-boundedo r bound)
+    (lto-boundedo r am bound)))

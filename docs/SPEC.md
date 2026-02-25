@@ -65,6 +65,7 @@ Required successful modes for current acceptance:
 - ground/ground correctness for `pluso` and `*o`.
 - bounded inverse modes used by tests, for example:
   - ground `x,z` with variable `y` under explicit bound constraints.
+  - explicit digit-length bounds are the default boundedness mechanism (for example, via `bto-boundedo` in `bt_rel.rkt`).
 
 Not required in current acceptance:
 - unbounded var/var termination.
@@ -96,7 +97,7 @@ Canonical form should be enforced at explicit boundaries, not deeply or implicit
 
 Repository-level regression checks also include:
 - `raco test test`
-- `raco test assurance/slow_assurance_test.rkt`
+- `raco test assurance`
 
 ## 8. Acceptance test contract
 

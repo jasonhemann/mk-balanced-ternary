@@ -187,6 +187,18 @@
    (run* (p) (*o '(1 1 1) '(1 1 1 1 1 1) p))
    '((1 0 0 1 1 1 0 1 1))))
 
+(test-case "logo base case for n=1 is canonical and non-overlapping"
+  (define answers (run 2 (b) (logo '(1) b '() '())))
+  (check-equal? (length answers) 2)
+  (check-equal? (first answers) '(1))
+  (check-not-false
+   (run1 (lambda ()
+           (run 1 (q)
+             (fresh (b)
+               (logo '(1) b '() '())
+               (gt1o b)
+               (== q 'ok)))))))
+
 (test-case "naming aliases behave identically"
   (define a '(1 0 1 1))
   (define b '(1 1 0))
