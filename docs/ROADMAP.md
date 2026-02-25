@@ -50,6 +50,7 @@ Progress:
 - Implemented: bounded totality/completeness checks for multiplication (`test/bt_totality_test.rkt`), including exhaustive factorization of 12 and mode-matrix coverage.
 - Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
 - Implemented: bounded Euclidean `divo-boundedo` mode matrix for representative sign cases (`test/bt_div_mode_matrix_test.rkt`).
+- Implemented: explicit cross-sign valence regression checks (`test/bt_signed_valence_test.rkt`) for add/subtract/multiply/divide, including subtract-negatives and mixed-sign inverse modes.
 - Next: improve operational profile of bounded `divo` with tighter pruning (reduce duplicate paths and lower run-prefix requirements).
 
 ### M2 Ordering (optional)
