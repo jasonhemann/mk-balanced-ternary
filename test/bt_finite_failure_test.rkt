@@ -174,7 +174,7 @@
      #:k2 16
      #:timeout-ms 2000)))
 
-(test-case "bt finite failure matrix: divo-boundedo modes with failure witnesses"
+(test-case "bt finite failure matrix: divo modes with failure witnesses"
   (define cases (find-mode-witnesses 4 div-sat ints))
   (check-true (pair? cases))
   (for ([entry cases])
@@ -185,7 +185,7 @@
     (define qv (list-ref witness 2))
     (define r (list-ref witness 3))
     (check-bt-case-strict
-     (format "divo-boundedo/fail/~a" (mask->label mask))
+     (format "divo/fail/~a" (mask->label mask))
      #:expected-set (lambda () '())
      #:run-observed
      (lambda (limit)
@@ -199,7 +199,7 @@
            (bind-int-if rm m)
            (bind-int-if rq qv)
            (bind-int-if rr r)
-           (divo-boundedo rn rm rq rr bound)
+           (divo rn rm rq rr bound)
            (== ans (list rn rm rq rr)))))
      #:decode-answer decode-bt-tuple
      #:k 8

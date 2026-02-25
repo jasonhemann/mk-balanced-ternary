@@ -81,7 +81,7 @@
      (lambda (limit)
        (run limit (ans)
          (fresh (qq rr)
-           (divo-boundedo (int->bt-term n)
+           (divo (int->bt-term n)
                           (int->bt-term m)
                           qq rr
                           bound3)
@@ -103,7 +103,7 @@
      #:run-observed
      (lambda (limit)
        (run limit (qq)
-         (divo-boundedo (int->bt-term n)
+         (divo (int->bt-term n)
                         (int->bt-term m)
                         qq
                         (int->bt-term r)
@@ -119,7 +119,7 @@
      #:run-observed
      (lambda (limit)
        (run limit (nn)
-         (divo-boundedo nn
+         (divo nn
                         (int->bt-term m)
                         (int->bt-term q)
                         (int->bt-term r)
@@ -141,7 +141,7 @@
     (define sols
       (run* (ans)
         (fresh (qq rr)
-          (divo-boundedo (int->bt-term n)
+          (divo (int->bt-term n)
                          (int->bt-term m)
                          qq rr
                          bound3)

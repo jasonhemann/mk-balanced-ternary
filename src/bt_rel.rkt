@@ -216,7 +216,7 @@
 
 ;; Euclidean division over bounded BT integers:
 ;; n = m*q + r, m != 0, and 0 <= r < |m|.
-(defrel (divo-boundedo n m q r bound)
+(defrel (divo n m q r bound)
   (bto-boundedo n bound)
   (bto-boundedo m bound)
   (bto-boundedo q bound)
@@ -228,3 +228,7 @@
     (abso-boundedo m am bound)
     (nneg-boundedo r bound)
     (lto-boundedo r am bound)))
+
+;; Backward-compatible alias while tests/docs migrate to `divo`.
+(defrel (divo-boundedo n m q r bound)
+  (divo n m q r bound))

@@ -69,7 +69,7 @@ Core ground arithmetic queries are expected to be deterministic. Example:
 ```racket
 (run* (q)
   (fresh (qq rr)
-    (divo-boundedo '(1 1) '(0 1) qq rr '(k k k))
+    (divo '(1 1) '(0 1) qq rr '(k k k))
     (== q (list qq rr))))
 ;; => '(((1) (1)))
 ```
@@ -78,7 +78,7 @@ The harness still normalizes answers with `remove-duplicates` defensively for la
 
 ## 5) Euclidean division semantics
 
-`divo-boundedo n m q r bound` (in `/Users/jhemann/Code/mk-balanced-ternary/src/bt_rel.rkt`) uses:
+`divo n m q r bound` (in `/Users/jhemann/Code/mk-balanced-ternary/src/bt_rel.rkt`) uses:
 
 - `m != 0`
 - `n = m*q + r`

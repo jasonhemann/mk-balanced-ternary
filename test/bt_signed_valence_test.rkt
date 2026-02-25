@@ -131,7 +131,7 @@
      #:k2 1
      #:timeout-ms 2000)))
 
-(test-case "bt signed valence: Euclidean divo-boundedo across sign combinations"
+(test-case "bt signed valence: Euclidean divo across sign combinations"
   (define div-cases
     (list (list 11 4)
           (list 11 -4)
@@ -153,7 +153,7 @@
      (lambda (limit)
        (run limit (ans)
          (fresh (qq rr)
-           (divo-boundedo (int->bt-term n)
+           (divo (int->bt-term n)
                           (int->bt-term m)
                           qq rr
                           bound4)
@@ -170,7 +170,7 @@
      (lambda (limit)
        (run limit (nn)
          (bto-boundedo nn bound4)
-         (divo-boundedo nn
+         (divo nn
                         (int->bt-term m)
                         (int->bt-term q)
                         (int->bt-term r)
@@ -234,7 +234,7 @@
      (lambda (limit)
        (run limit (ans)
          (fresh (qq rr)
-           (divo-boundedo (int->bt-term a)
+           (divo (int->bt-term a)
                           (int->bt-term b)
                           qq rr
                           bound4)

@@ -71,7 +71,7 @@
       (bind-int-if m m0)
       (bind-int-if q q0)
       (bind-int-if r r0)
-      (divo-boundedo n m q r bound)
+      (divo n m q r bound)
       (== ans (list n m q r)))))
 
 (test-case "bt div mode matrix: Euclidean modes for representative seeds"

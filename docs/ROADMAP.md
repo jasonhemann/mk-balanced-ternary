@@ -45,11 +45,11 @@ Suggested immediate next step:
 Progress:
 - Started: BT harness skeleton added with fast (`test/bt_harness_*.rkt`) and assurance (`assurance/bt_harness_assurance_test.rkt`) tracks.
 - Implemented: bounded BT mode-matrix tests through `*o` (`test/bt_mode_bounds_test.rkt`) covering all grounding patterns under explicit digit-length bounds.
-- Implemented: bounded ordering/absolute/division kernel (`lto-boundedo`, `abso-boundedo`, `divo-boundedo`) with Euclidean remainder tests in `test/bt_order_div_test.rkt`.
+- Implemented: bounded ordering/absolute/division kernel (`lto-boundedo`, `abso-boundedo`, `divo`) with Euclidean remainder tests in `test/bt_order_div_test.rkt`.
 - Implemented: bounded finite-failure matrix (`test/bt_finite_failure_test.rkt`) that enumerates grounding modes with unsatisfiable instances and asserts finite failure.
 - Implemented: bounded totality/completeness checks for multiplication (`test/bt_totality_test.rkt`), including exhaustive factorization of 12 and mode-matrix coverage.
 - Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
-- Implemented: bounded Euclidean `divo-boundedo` mode matrix for representative sign cases (`test/bt_div_mode_matrix_test.rkt`).
+- Implemented: bounded Euclidean `divo` mode matrix for representative sign cases (`test/bt_div_mode_matrix_test.rkt`).
 - Implemented: explicit cross-sign valence regression checks (`test/bt_signed_valence_test.rkt`) for add/subtract/multiply/divide, including subtract-negatives and mixed-sign inverse modes.
 - Implemented: tightened carry-construction pruning in `pluso` (`sum-trim0o`) to remove duplicate proof paths that propagated into division answers.
 - Implemented: explicit deterministic-ground regression checks for Euclidean division (`test/bt_order_div_test.rkt`).

@@ -5,7 +5,7 @@ This directory contains relation implementations and oracle code.
 Primary balanced-ternary modules:
 - `bt_rel.rkt`
   - Core balanced-ternary relations (`trito`, `add3o`, `nego`/`negateo`, `pluso`, `minuso`, `mul1o`, `*o`, and helpers).
-  - Includes pure length-bound helpers for finite-mode testing (`len<=o`, `bto-boundedo`) and bounded ordering/division helpers (`lto-boundedo`, `abso-boundedo`, `divo-boundedo`).
+  - Includes pure length-bound helpers for finite-mode testing (`len<=o`, `bto-boundedo`) and bounded ordering/division helpers (`lto-boundedo`, `abso-boundedo`, `divo`).
   - Main implementation target for current milestones.
 - `bt_oracle.rkt`
   - Host-level conversion oracle (`bt->int`, `int->bt`) used by tests.
