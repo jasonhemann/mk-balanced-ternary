@@ -86,6 +86,16 @@ The harness still normalizes answers with `remove-duplicates` defensively for la
 
 This is the chosen division convention for BT work in this repo.
 
+Current surface note:
+- Primary relation name is `divo`.
+- `divo-boundedo` is kept as a compatibility alias while older call sites are phased out.
+
+Current fast-suite coverage for division:
+- `test/bt_order_div_test.rkt`: denotational Euclidean checks and deterministic ground cases.
+- `test/bt_div_mode_matrix_test.rkt`: bounded grounding-mode matrix.
+- `test/bt_finite_failure_test.rkt`: bounded finite-failure mode matrix.
+- `test/bt_signed_valence_test.rkt`: cross-sign regression cases.
+
 ## 6) Practical query templates
 
 Bounded solve for addends:

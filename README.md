@@ -32,6 +32,7 @@ Core balanced-ternary track:
 - `test/bt_harness_primitive_test.rkt` and `test/bt_harness_ops_test.rkt` - BT harness parity checks against the oracle.
 - `test/bt_mode_bounds_test.rkt` - bounded mode/groundedness matrix checks through `*o`.
 - `test/bt_order_div_test.rkt` - bounded ordering and Euclidean division semantics checks.
+- `test/bt_div_mode_matrix_test.rkt`, `test/bt_finite_failure_test.rkt`, `test/bt_signed_valence_test.rkt` - Euclidean `divo` mode, failure, and signed-case coverage.
 
 Legacy baseline track:
 - `src/binary-numbers.rkt` - binary miniKanren arithmetic baseline.

@@ -53,7 +53,8 @@ Progress:
 - Implemented: explicit cross-sign valence regression checks (`test/bt_signed_valence_test.rkt`) for add/subtract/multiply/divide, including subtract-negatives and mixed-sign inverse modes.
 - Implemented: tightened carry-construction pruning in `pluso` (`sum-trim0o`) to remove duplicate proof paths that propagated into division answers.
 - Implemented: explicit deterministic-ground regression checks for Euclidean division (`test/bt_order_div_test.rkt`).
-- Next: promote Euclidean division from bounded helper shape to primary relation surface while preserving bounded operational tests.
+- Implemented: promoted Euclidean `divo` as the primary division relation surface (with `divo-boundedo` compatibility alias).
+- Next: continue Euclidean-division hardening with stricter mode/termination evidence for the selected `divo` surface.
 
 ### M2 Ordering (optional)
 - Add bounded ordering relations (for example, `<o`, `<=o`) with explicit max-digit bound parameters.
