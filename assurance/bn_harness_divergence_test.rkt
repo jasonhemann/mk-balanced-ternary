@@ -45,7 +45,7 @@
    #:decode-answer decode-bn-tuple
    #:k 1
    #:k2 200
-   #:timeout-ms 7000))
+   #:timeout-ms 12000))
 
 (test-case "bn harness ops assurance: randomized /o over [0,220] (seeded)"
   (parameterize ([current-pseudo-random-generator

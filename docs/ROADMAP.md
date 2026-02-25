@@ -49,7 +49,8 @@ Progress:
 - Implemented: bounded finite-failure matrix (`test/bt_finite_failure_test.rkt`) that enumerates grounding modes with unsatisfiable instances and asserts finite failure.
 - Implemented: bounded totality/completeness checks for multiplication (`test/bt_totality_test.rkt`), including exhaustive factorization of 12 and mode-matrix coverage.
 - Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
-- Next: improve operational profile of bounded `divo` (broader inverse-mode matrices and tighter bound propagation).
+- Implemented: bounded Euclidean `divo-boundedo` mode matrix for representative sign cases (`test/bt_div_mode_matrix_test.rkt`).
+- Next: improve operational profile of bounded `divo` with tighter pruning (reduce duplicate paths and lower run-prefix requirements).
 
 ### M2 Ordering (optional)
 - Add bounded ordering relations (for example, `<o`, `<=o`) with explicit max-digit bound parameters.

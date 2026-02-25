@@ -6,6 +6,8 @@ This directory separates normative requirements from planning and explanatory no
   - Normative source of truth for balanced-ternary representation, relations, operational expectations, and acceptance contract.
 - `ROADMAP.md`
   - Phase sequencing and planning priorities.
+- `BALANCED_TERNARY_101.md`
+  - Practical guide to reading and writing raw balanced-ternary terms in relational queries.
 - `FASTER_MINIKANREN.md`
   - Backend syntax and coding discipline notes for faster-miniKanren usage.
 - `INTEROP.md`

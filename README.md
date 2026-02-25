@@ -48,6 +48,7 @@ Assurance:
 
 Documentation:
 - `docs/SPEC.md` - normative arithmetic and operational contract.
+- `docs/BALANCED_TERNARY_101.md` - practical guide for reading/writing raw BT terms.
 - `docs/ROADMAP.md` - phase sequencing and planning.
 - `docs/FASTER_MINIKANREN.md` - backend syntax and discipline notes.
 - `docs/INTEROP.md` - future interop strategy.
