@@ -6,6 +6,7 @@ Run with:
 - `raco test assurance/slow_assurance_test.rkt`
 - `raco test assurance/bn_harness_divergence_test.rkt`
 - `raco test assurance/bt_harness_assurance_test.rkt`
+- `raco test assurance/bt_totality_assurance_test.rkt`
 
 Purpose:
 - Heavy randomized property checks over wider ranges.
@@ -18,6 +19,8 @@ Purpose:
 - The randomized `/o` sweep is seeded and range-limited to keep runtime stable while still exercising inverse division behavior.
 - Dedicated BT-harness assurance checks:
   - seeded heavier randomized `pluso` and `*o` checks against `bt_oracle`.
+- Dedicated BT totality assurance checks:
+  - fully open `*o` vvv bounded-completeness check over len<=3.
 
 Policy:
 - Engine usage is intentional for divergence testing.

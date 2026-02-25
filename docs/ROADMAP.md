@@ -46,6 +46,9 @@ Progress:
 - Started: BT harness skeleton added with fast (`test/bt_harness_*.rkt`) and assurance (`assurance/bt_harness_assurance_test.rkt`) tracks.
 - Implemented: bounded BT mode-matrix tests through `*o` (`test/bt_mode_bounds_test.rkt`) covering all grounding patterns under explicit digit-length bounds.
 - Implemented: bounded ordering/absolute/division kernel (`lto-boundedo`, `abso-boundedo`, `divo-boundedo`) with Euclidean remainder tests in `test/bt_order_div_test.rkt`.
+- Implemented: bounded finite-failure matrix (`test/bt_finite_failure_test.rkt`) that enumerates grounding modes with unsatisfiable instances and asserts finite failure.
+- Implemented: bounded totality/completeness checks for multiplication (`test/bt_totality_test.rkt`), including exhaustive factorization of 12 and mode-matrix coverage.
+- Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
 - Next: improve operational profile of bounded `divo` (broader inverse-mode matrices and tighter bound propagation).
 
 ### M2 Ordering (optional)

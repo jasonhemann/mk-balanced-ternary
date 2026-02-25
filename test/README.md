@@ -11,6 +11,8 @@ Composition:
   - `bt_harness_primitive_test.rkt`
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)
+  - `bt_finite_failure_test.rkt` (bounded finite-failure matrix for `pluso`, `minuso`, `*o`, `divo-boundedo`)
+  - `bt_totality_test.rkt` (bounded completeness/totality checks, including all factor pairs for 12)
   - `bt_order_div_test.rkt` (bounded ordering + Euclidean `divo-boundedo` semantics)
   - `support/bt_harness.rkt` (test-only BT harness utilities)
 - Legacy baseline tests:
@@ -27,6 +29,7 @@ Purpose:
 - Keep the default loop warning-light; slower completeness/divergence checks are in `assurance/`.
 - BT harness checks that compare `bt_rel` with `bt_oracle` using the same classification model as BN.
 - Bounded BT mode-matrix checks ensure finite all-groundedness variants through multiplication under explicit digit-length bounds.
+- The heaviest open-mode totality check (`*o` vvv) is intentionally in `assurance/`.
 
 Binary harness defaults:
 - Prefix limits: `k=5`, `k2=10`.
