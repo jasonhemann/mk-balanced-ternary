@@ -100,7 +100,8 @@
     [(== z `(,s . ,zrest))
      (conde
        [(=/= s '0)]
-       [(fresh (a d) (== zrest `(,a . ,d)))])]))
+       [(== s '0)
+        (fresh (a d) (== zrest `(,a . ,d)))])]))
 
 (defrel (pluso x y z)
   (add-carryo x y '0 z))

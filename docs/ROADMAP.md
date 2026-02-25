@@ -51,11 +51,33 @@ Progress:
 - Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
 - Implemented: bounded Euclidean `divo-boundedo` mode matrix for representative sign cases (`test/bt_div_mode_matrix_test.rkt`).
 - Implemented: explicit cross-sign valence regression checks (`test/bt_signed_valence_test.rkt`) for add/subtract/multiply/divide, including subtract-negatives and mixed-sign inverse modes.
-- Next: improve operational profile of bounded `divo` with tighter pruning (reduce duplicate paths and lower run-prefix requirements).
+- Implemented: tightened carry-construction pruning in `pluso` (`sum-trim0o`) to remove duplicate proof paths that propagated into division answers.
+- Implemented: explicit deterministic-ground regression checks for Euclidean division (`test/bt_order_div_test.rkt`).
+- Next: promote Euclidean division from bounded helper shape to primary relation surface while preserving bounded operational tests.
 
 ### M2 Ordering (optional)
 - Add bounded ordering relations (for example, `<o`, `<=o`) with explicit max-digit bound parameters.
 - Keep unbounded var/var ordering out of scope unless a separate strategy is approved.
+
+### M2.5 Alternate division semantics (deferred)
+Current active track:
+- Keep Euclidean-style division as the primary `divo` target (`n = m*q + r`, `m =/= 0`, `0 <= r < |m|`).
+- Preserve the current goal of deterministic ground behavior (single `(q, r)` for fixed `n, m`) and bounded all-mode operational checks.
+
+Planned alternate track (after current track is stable):
+- Add a separate division relation with symmetric remainder semantics (`|r| < |m|`) so signed remainder answers can be explored relationally.
+- Do not merge this with the Euclidean relation; keep it as an explicit second relation with its own tests and mode expectations.
+
+Why this is a separate relation:
+- The two semantics have different answer multiplicity for ground inputs (Euclidean: unique; symmetric remainder: typically two).
+- That multiplicity changes search branching and termination behavior, so each version needs distinct operational design and test budgets.
+
+Similarity and difference summary:
+- Same arithmetic equation: `n = m*q + r`, same non-zero divisor requirement.
+- Different canonical remainder policy, answer-set size, and expected operational profile.
+
+Return-to work item:
+- Once Euclidean `divo` behavior and tests are fully stable, define the second relation contract and add a dedicated fast/assurance mode matrix for it.
 
 ### M3 Interop (optional)
 - Add bounded translation/comparison interfaces across representations.

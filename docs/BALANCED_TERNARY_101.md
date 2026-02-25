@@ -62,19 +62,19 @@ Decoded result (same query):
 '((0) (-1) (1) (-4) (2) (-3) (-2) (3) (4))
 ```
 
-## 4) Duplicates in raw output
+## 4) Answer normalization in harness checks
 
-Some relations currently return duplicate answers via different proof paths. Example:
+Core ground arithmetic queries are expected to be deterministic. Example:
 
 ```racket
 (run* (q)
   (fresh (qq rr)
     (divo-boundedo '(1 1) '(0 1) qq rr '(k k k))
     (== q (list qq rr))))
-;; => '(((1) (1)) ((1) (1)))
+;; => '(((1) (1)))
 ```
 
-Semantically this is one `(q,r)` pair (`1,1`). Harness checks normalize with `remove-duplicates`.
+The harness still normalizes answers with `remove-duplicates` defensively for larger open-mode queries.
 
 ## 5) Euclidean division semantics
 
@@ -116,4 +116,4 @@ Bounded solve for factor pairs:
 - `T` is `-1`, not a type marker.
 - Canonicality matters: terms ending in MS `0` are non-canonical unless `()`.
 - Bounded runs are the intended mode for completeness/failure claims.
-- Normalize duplicates before comparing observed vs expected denotations.
+- Harness comparisons normalize answer sets before denotational checks.

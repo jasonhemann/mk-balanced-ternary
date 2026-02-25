@@ -128,3 +128,24 @@
      #:k 1
      #:k2 1
      #:timeout-ms 2500)))
+
+(test-case "bt division ground cases are deterministic (no duplicate proofs)"
+  (for ([entry (list (list 4 3 1 1)
+                     (list -4 3 -2 2)
+                     (list -4 -3 2 2)
+                     (list 4 -3 -1 1))])
+    (define n (first entry))
+    (define m (second entry))
+    (define q (third entry))
+    (define r (fourth entry))
+    (define sols
+      (run* (ans)
+        (fresh (qq rr)
+          (divo-boundedo (int->bt-term n)
+                         (int->bt-term m)
+                         qq rr
+                         bound3)
+          (== ans (list qq rr)))))
+    (check-equal? sols
+                  (list (list (int->bt-term q)
+                              (int->bt-term r))))))
