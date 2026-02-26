@@ -68,6 +68,9 @@ Required successful modes for current acceptance:
   - explicit digit-length bounds are the default boundedness mechanism (for example, via `bto-boundedo` in `bt_rel.rkt`).
 - open-mode answers may be partially instantiated symbolic terms; acceptance is
   by denotation under bounded domains, not by requiring every answer to be fully ground.
+- raw answer stream ordering and symbolic partition shape are operationally
+  significant but not semantically canonical; denotational set equality is the
+  acceptance criterion for relational-law checks.
 
 Not required in current acceptance:
 - unbounded var/var termination.
@@ -114,3 +117,7 @@ Slow assurance suite (`assurance/`) is the deeper confidence gate:
 - engine-based timeout assertions for known divergent query shapes.
 
 Any test that can produce infinitely many satisfying answers must include explicit finite bounds when used as a regression check.
+
+For bounded law checks (commutativity/associativity/cancellation/inverse),
+equivalence is measured on decoded normalized bounded sets, not literal stream
+order or exact symbolic answer partitioning.

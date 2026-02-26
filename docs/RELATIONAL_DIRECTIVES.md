@@ -49,3 +49,13 @@ These directives capture recurring implementation rules for arithmetic relations
 10. Keep operational bounds inside the arithmetic relation family.
    - Bound/ordering constraints should be relation-internal (or in designated
      boundary helpers), not externally bolted on at random call sites.
+
+11. Compare relational laws by denotation, not raw stream shape.
+   - For commutativity/associativity/cancellation checks, compare decoded
+     normalized answer sets under explicit bounds.
+   - Do not require identical answer ordering or identical symbolic partitioning.
+
+12. Test both failure and success across conjunction flow orderings.
+   - Finite-failure flow checks are necessary but not sufficient.
+   - Add satisfiable flow-completeness checks to ensure each ordering returns
+     the exact expected bounded set (not merely some prefix).

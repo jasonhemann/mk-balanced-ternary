@@ -9,6 +9,7 @@ Run with:
 - `raco test assurance/bt_totality_assurance_test.rkt`
 - `raco test assurance/bt_finite_failure_exhaustive_assurance_test.rkt`
 - `raco test assurance/bt_primitives_finite_failure_assurance_test.rkt`
+- `raco test assurance/bt_additive_flow_exhaustive_assurance_test.rkt`
 
 Purpose:
 - Heavy randomized property checks over wider ranges.
@@ -31,6 +32,10 @@ Purpose:
   - exhaustive unsatisfiable mode instances for `add3o`, `mul1o`, and `nego`,
   - multiple conjunction flow orderings per case,
   - each case must terminate and return empty.
+- Dedicated BT additive flow-completeness checks:
+  - exhaustive satisfiable mode instances for `pluso` and `minuso` over len<=2,
+  - multiple conjunction flow orderings per case,
+  - each case must terminate and return the exact expected bounded set.
 
 Policy:
 - Engine usage is intentional for divergence testing.

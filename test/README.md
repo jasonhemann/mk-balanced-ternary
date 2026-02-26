@@ -17,6 +17,8 @@ Composition:
     - side-by-side parity checks for counterintuitive open-mode symbolic answers, confirming BT behavior matches the legacy binary suite
   - `bt_bn_prl_add_sub_parity_test.rkt`
     - side-by-side parity checks for arith.prl/paper add/sub showcase cases (including finite-failure vs integer-extension differences)
+  - `bt_additive_laws_test.rkt`
+    - commutativity/associativity/cancellation/inverse checks for additive relations (exhaustive bounded + randomized stress)
   - `bt_harness_primitive_test.rkt`
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)
