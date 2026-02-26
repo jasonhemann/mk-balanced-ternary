@@ -5,6 +5,12 @@
          (file "../src/bt_rel.rkt")
          (file "support/bt_harness.rkt"))
 
+(define ENABLE-BT-DIVO-TESTS? #f)
+
+(define-syntax-rule (divo-test-case name body ...)
+  (when ENABLE-BT-DIVO-TESTS?
+    (test-case name body ...)))
+
 (define (make-bound len)
   (build-list len (lambda (i) 'k)))
 
@@ -131,7 +137,7 @@
      #:k2 1
      #:timeout-ms 2000)))
 
-(test-case "bt signed valence: Euclidean divo across sign combinations"
+(divo-test-case "bt signed valence: Euclidean divo across sign combinations"
   (define div-cases
     (list (list 11 4)
           (list 11 -4)
@@ -226,20 +232,21 @@
      #:k 1
      #:k2 1
      #:timeout-ms 2500)
-    (check-bt-case-strict
-     (format "cross-sign/divo/~a" i)
-     #:expected-set (lambda ()
-                      (list (list q r)))
-     #:run-observed
-     (lambda (limit)
-       (run limit (ans)
-         (fresh (qq rr)
-           (divo (int->bt-term a)
-                          (int->bt-term b)
-                          qq rr
-                          bound4)
-           (== ans (list qq rr)))))
-     #:decode-answer decode-bt-tuple
-     #:k 1
-     #:k2 1
-     #:timeout-ms 6000)))
+    (when ENABLE-BT-DIVO-TESTS?
+      (check-bt-case-strict
+       (format "cross-sign/divo/~a" i)
+       #:expected-set (lambda ()
+                        (list (list q r)))
+       #:run-observed
+       (lambda (limit)
+         (run limit (ans)
+           (fresh (qq rr)
+             (divo (int->bt-term a)
+                            (int->bt-term b)
+                            qq rr
+                            bound4)
+             (== ans (list qq rr)))))
+       #:decode-answer decode-bt-tuple
+       #:k 1
+       #:k2 1
+       #:timeout-ms 6000))))

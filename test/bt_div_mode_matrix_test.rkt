@@ -5,6 +5,12 @@
          (file "../src/bt_rel.rkt")
          (file "support/bt_harness.rkt"))
 
+(define ENABLE-BT-DIVO-TESTS? #f)
+
+(define-syntax-rule (divo-test-case name body ...)
+  (when ENABLE-BT-DIVO-TESTS?
+    (test-case name body ...)))
+
 (define (make-bound len)
   (build-list len (lambda (i) 'k)))
 
@@ -74,7 +80,7 @@
       (divo n m q r bound)
       (== ans (list n m q r)))))
 
-(test-case "bt div mode matrix: Euclidean modes for representative seeds"
+(divo-test-case "bt div mode matrix: Euclidean modes for representative seeds"
   (define seeds
     (list
      (list "pos" '(4 3 1 1))

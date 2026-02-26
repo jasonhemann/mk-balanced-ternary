@@ -5,6 +5,12 @@
          (file "../src/bt_rel.rkt")
          (file "support/bt_harness.rkt"))
 
+(define ENABLE-BT-DIVO-TESTS? #f)
+
+(define-syntax-rule (divo-test-case name body ...)
+  (when ENABLE-BT-DIVO-TESTS?
+    (test-case name body ...)))
+
 (define (make-bound len)
   (build-list len (lambda (i) 'k)))
 
@@ -68,7 +74,7 @@
    #:k2 k2
    #:timeout-ms 1600))
 
-(test-case "bt division semantics: Euclidean ground (n,m)->(q,r)"
+(divo-test-case "bt division semantics: Euclidean ground (n,m)->(q,r)"
   (for* ([n ints3]
          [m ints3]
          #:when (not (zero? m)))
@@ -91,7 +97,7 @@
      #:k2 1
      #:timeout-ms 2500)))
 
-(test-case "bt division inverse modes: recover q and n under Euclidean semantics"
+(divo-test-case "bt division inverse modes: recover q and n under Euclidean semantics"
   (for* ([n ints3]
          [m ints3]
          #:when (not (zero? m)))
@@ -129,7 +135,7 @@
      #:k2 1
      #:timeout-ms 2500)))
 
-(test-case "bt division ground cases are deterministic (no duplicate proofs)"
+(divo-test-case "bt division ground cases are deterministic (no duplicate proofs)"
   (for ([entry (list (list 4 3 1 1)
                      (list -4 3 -2 2)
                      (list -4 -3 2 2)

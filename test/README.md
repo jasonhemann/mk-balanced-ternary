@@ -9,15 +9,17 @@ Composition:
 - Primary balanced-ternary tests:
   - `bt_rel_test.rkt`
     - includes canonical-surface regression checks for `pluso`/`minuso` zero-alias behavior
+  - `bt_boundary_relations_test.rkt`
+    - boundary/domain relation checks for `canco`, `canco-shapeo`, `digit-stepo`, and explicit trito-ablation demonstrations
   - `bt_harness_primitive_test.rkt`
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)
-  - `bt_div_mode_matrix_test.rkt` (bounded Euclidean division mode matrix across grounding patterns)
-  - `bt_div_exhaustive_mode_test.rkt` (exhaustive bounded `run*` mode checks for `divo`, including denotational set equality vs host semantics)
-  - `bt_signed_valence_test.rkt` (explicit negative/positive crossing cases for `pluso`, `minuso`, `*o`, `divo`)
-  - `bt_finite_failure_test.rkt` (bounded finite-failure matrix for `pluso`, `minuso`, `*o`, `divo`)
+  - `bt_signed_valence_test.rkt` (explicit negative/positive crossing cases for `pluso`, `minuso`, `*o`; div cases parked)
+  - `bt_finite_failure_test.rkt` (bounded finite-failure matrix for `pluso`, `minuso`, `*o`; div cases parked)
   - `bt_totality_test.rkt` (bounded completeness/totality checks, including all factor pairs for 12)
-  - `bt_order_div_test.rkt` (bounded ordering + Euclidean `divo` semantics)
+  - `bt_order_div_test.rkt` (bounded ordering checks; div cases parked)
+  - `bt_div_mode_matrix_test.rkt` (div mode matrix currently parked)
+  - `bt_div_exhaustive_mode_test.rkt` (div exhaustive mode checks currently parked)
   - `support/bt_harness.rkt` (test-only BT harness utilities)
 - Legacy baseline tests:
   - `binary_numbers_test.rkt`
@@ -53,6 +55,7 @@ Bounded-query policy:
 - Divergence assertions and timeout behavior belong in `assurance/`.
 - Randomized `/o` coverage belongs in `assurance/` to avoid non-deterministic timeout warnings in the fast suite.
 - As BT harness coverage expands, move warning-prone or high-latency cases to `assurance/` after measurement.
+- BT `divo` work is currently parked (`ENABLE-BT-DIVO-TESTS? = #f` in div-focused files).
 
 Partial-term policy:
 - Harness coverage includes whole-number vars and bounded tail vars (for example, `(1 . x)` shapes).

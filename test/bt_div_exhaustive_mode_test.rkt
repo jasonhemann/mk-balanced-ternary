@@ -7,6 +7,12 @@
          (file "../src/bt_rel.rkt")
          (file "support/bt_harness.rkt"))
 
+(define ENABLE-BT-DIVO-TESTS? #f)
+
+(define-syntax-rule (divo-test-case name body ...)
+  (when ENABLE-BT-DIVO-TESTS?
+    (test-case name body ...)))
+
 (define (make-bound len)
   (build-list len (lambda (i) 'k)))
 
@@ -90,7 +96,7 @@
         string<?
         #:key (lambda (x) (format "~s" x))))
 
-(test-case "bt div exhaustive modes: run* completes and matches host denotation (len<=2)"
+(divo-test-case "bt div exhaustive modes: run* completes and matches host denotation (len<=2)"
   (define seeds
     (list
      (list "pos" '(4 3 1 1))

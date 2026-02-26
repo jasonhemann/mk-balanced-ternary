@@ -24,3 +24,7 @@ These directives capture recurring implementation rules for arithmetic relations
    - Fast suite catches regressions in core behavior/modes.
    - Assurance suite catches slow-mode and divergence-expectation regressions.
 
+6. Keep an ablation test for critical boundary constraints.
+   - The fast suite includes boundary ablations that intentionally remove
+     `trito` checks from bounded predicates and assert undecodable outputs appear.
+   - This guards against accidentally weakening domain contracts in future edits.

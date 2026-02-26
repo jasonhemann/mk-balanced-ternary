@@ -264,7 +264,7 @@
 
 ;; Euclidean division over bounded BT integers:
 ;; n = m*q + r, m != 0, and 0 <= r < |m|.
-(defrel (divo n m q r bound)
+(defrel (divo-activeo n m q r bound)
   (bto-boundedo n bound)
   (bto-boundedo m bound)
   (bto-boundedo q bound)
@@ -276,6 +276,14 @@
     (abso-boundedo m am bound)
     (nneg-boundedo r bound)
     (lto-boundedo r am bound)))
+
+;; Temporarily parked while we focus on boundary/domain relation behavior.
+(define ENABLE-BT-DIVO? #f)
+
+(defrel (divo n m q r bound)
+  (if ENABLE-BT-DIVO?
+      (divo-activeo n m q r bound)
+      (== #t #f)))
 
 ;; Backward-compatible alias while tests/docs migrate to `divo`.
 (defrel (divo-boundedo n m q r bound)

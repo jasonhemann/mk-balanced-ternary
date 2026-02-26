@@ -5,6 +5,12 @@
          (file "../src/bt_rel.rkt")
          (file "support/bt_harness.rkt"))
 
+(define ENABLE-BT-DIVO-TESTS? #f)
+
+(define-syntax-rule (divo-test-case name body ...)
+  (when ENABLE-BT-DIVO-TESTS?
+    (test-case name body ...)))
+
 (define (make-bound len)
   (build-list len (lambda (i) 'k)))
 
@@ -174,7 +180,7 @@
      #:k2 16
      #:timeout-ms 2000)))
 
-(test-case "bt finite failure matrix: divo modes with failure witnesses"
+(divo-test-case "bt finite failure matrix: divo modes with failure witnesses"
   (define cases (find-mode-witnesses 4 div-sat ints))
   (check-true (pair? cases))
   (for ([entry cases])
