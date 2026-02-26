@@ -126,5 +126,6 @@ Bounded solve for factor pairs:
 - Lists are LSD-first.
 - `T` is `-1`, not a type marker.
 - Canonicality matters: terms ending in MS `0` are non-canonical unless `()`.
+- `pluso`/`minuso` are canonical-domain surfaces: non-canonical numeral inputs are out of domain, and zero-alias outputs like `(0)` should not appear.
 - Bounded runs are the intended mode for completeness/failure claims.
 - Harness comparisons normalize answer sets before denotational checks.

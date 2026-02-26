@@ -69,23 +69,26 @@
 
 (defrel (add-carryo x y cin z)
   (conde
-    [(== '() x) (== '() y)
-     (conde
-       [(== cin '0) (== '() z)]
-       [(== cin '1) (== '(1) z)]
-       [(== cin 'T) (== '(T) z)])]
-    [(== '() x)
-     (fresh (b yrest s cout zrest)
-       (== `(,b . ,yrest) y)
-       (sum-trim0o s zrest z)
-       (add3o '0 b cin s cout)
-       (add-carryo '() yrest cout zrest))]
-    [(== '() y)
-     (fresh (a xrest s cout zrest)
-       (== `(,a . ,xrest) x)
-       (sum-trim0o s zrest z)
-       (add3o a '0 cin s cout)
-       (add-carryo xrest '() cout zrest))]
+    ;; Identity when one addend is exhausted and carry is zero.
+    [(== cin '0) (== '() x)
+     (fresh (a d)
+       (== y `(,a . ,d))
+       (== y z))]
+    [(== cin '0) (== '() y)
+     (== x z)]
+    ;; Carry propagation when one addend is exhausted.
+    [(== cin '1) (== '() x)
+     (fresh (a d)
+       (== y `(,a . ,d))
+       (add-carryo '(1) y '0 z))]
+    [(== cin '1) (== '() y)
+     (add-carryo x '(1) '0 z)]
+    [(== cin 'T) (== '() x)
+     (fresh (a d)
+       (== y `(,a . ,d))
+       (add-carryo '(T) y '0 z))]
+    [(== cin 'T) (== '() y)
+     (add-carryo x '(T) '0 z)]
     [(fresh (a xrest b yrest s cout zrest)
        (== `(,a . ,xrest) x)
        (== `(,b . ,yrest) y)
@@ -103,8 +106,16 @@
        [(== s '0)
         (fresh (a d) (== zrest `(,a . ,d)))])]))
 
-(defrel (pluso x y z)
+(defrel (pluso-raw x y z)
   (add-carryo x y '0 z))
+
+(defrel (pluso x y z)
+  ;; Canonical domain checks run after arithmetic constraints so open-mode
+  ;; queries do not enumerate canonical numerals up front.
+  (pluso-raw x y z)
+  (canco x)
+  (canco y)
+  (canco z))
 
 (defrel (minuso x y z)
   (pluso y z x))
@@ -119,12 +130,21 @@
   (conde
     [(== '() x) (== '() z)]
     [(== '() y) (== '() z)]
-    [(fresh (b0 yrest xb0 xyrest)
+    [(fresh (b0 yrest xb0 xyrest shifted)
        (== `(,b0 . ,yrest) y)
        (mul1o x b0 xb0)
        (*o x yrest xyrest)
-       (pluso xb0 `(0 . ,xyrest) z)
+       (shift3o xyrest shifted)
+       (pluso xb0 shifted z)
        (canco z))]))
+
+;; Multiply by 3 (one trit shift) while keeping canonical zero.
+(defrel (shift3o n out)
+  (conde
+    [(== n '()) (== out '())]
+    [(fresh (a d)
+       (== n `(,a . ,d))
+       (== out `(0 . ,n)))]))
 
 ;; Canonical: empty or last digit nonzero.
 (defrel (canco bt)

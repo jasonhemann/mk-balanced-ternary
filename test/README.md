@@ -8,6 +8,7 @@ Run with:
 Composition:
 - Primary balanced-ternary tests:
   - `bt_rel_test.rkt`
+    - includes canonical-surface regression checks for `pluso`/`minuso` zero-alias behavior
   - `bt_harness_primitive_test.rkt`
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)

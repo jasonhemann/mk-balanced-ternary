@@ -163,6 +163,16 @@
     ;; expected should appear (within the bound) unless bound too small
     (check-not-false (member expected sols bt=?))))
 
+(test-case "pluso/minuso canonical surface: no non-canonical zero aliases"
+  (check-equal? (run* (q) (pluso '() q '()))
+                '(()))
+  (check-equal? (run* (q) (minuso '(1) '(1) q))
+                '(()))
+  (check-equal? (run* (q) (pluso '(0) '() q))
+                '())
+  (check-equal? (run* (q) (minuso '() '(0) q))
+                '()))
+
 ;; ----------------------------
 ;; *o property tests
 ;; ----------------------------

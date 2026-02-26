@@ -76,7 +76,8 @@ Not required in current acceptance:
 
 Canonical form should be enforced at explicit boundaries, not deeply or implicitly in recursive arithmetic branches.
 
-- Do not force global canonicalization inside `pluso` or `*o` in ways that add avoidable branching.
+- Public arithmetic surfaces should expose canonical-domain behavior (canonical numerals in/out, non-canonical numerals out of domain).
+- Do not force global canonicalization deep inside recursive branches of `pluso` or `*o` in ways that add avoidable branching.
 - Local, non-branching canonical normalization steps are acceptable.
 - Tests may apply bounded canonical predicates to constrain search spaces.
 

@@ -87,6 +87,25 @@ Similarity and difference summary:
 Return-to work item:
 - Once Euclidean `divo` behavior and tests are fully stable, define the second relation contract and add a dedicated fast/assurance mode matrix for it.
 
+### Representation contingency matrix (if BT stalls)
+Current default path:
+- Balanced ternary (`'T/'0/'1`, base `+3`).
+
+Candidate comparison under current project constraints:
+- Balanced ternary
+  - Pros: local digitwise negation (`T <-> 1`), compact base-3 length, direct fit for signed arithmetic goals.
+  - Risks: 3-digit full-adder space and carry branching must be tightly controlled for mode performance.
+- Negabinary (base `-2`, digits `0/1`)
+  - Pros: small digit alphabet and compact carry table for addition.
+  - Risks: longer terms (base-2), nonlocal sign/negation behavior can complicate division/ordering relations.
+- Negaternary (base `-3`, digits `0/1/2`)
+  - Pros: base-3 length like BT with unique finite integer encodings.
+  - Risks: more complex carry cases than BT and nonlocal negation behavior.
+
+Fallback order if current BT milestone goals are not met:
+1. Negabinary (`-2`) as first fallback.
+2. Negaternary (`-3`) as second fallback.
+
 ### M3 Interop (optional)
 - Add bounded translation/comparison interfaces across representations.
 - Start with bridge relations to balanced ternary as canonical pivot.
