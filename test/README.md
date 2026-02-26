@@ -21,6 +21,8 @@ Composition:
     - commutativity/associativity/cancellation/inverse checks for additive relations (exhaustive bounded + randomized stress)
   - `bt_mul_laws_test.rkt`
     - commutativity/associativity/distributivity/identity checks for multiplication (exhaustive bounded + randomized stress)
+  - `bt_mul_partial_modes_test.rkt`
+    - bounded partial-tail mode checks for `*o` (single-tail, two-tail, inverse-tail, and finite-failure cases)
   - `bt_harness_primitive_test.rkt`
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)

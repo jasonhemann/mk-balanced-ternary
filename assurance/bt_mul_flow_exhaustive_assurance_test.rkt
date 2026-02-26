@@ -3,17 +3,12 @@
 (require (except-in rackunit fail)
          minikanren
          racket/engine
+         (only-in racket/list take)
          (file "../src/bt_rel.rkt")
          (file "../test/support/bt_harness.rkt"))
 
 (define (make-bound len)
   (build-list len (lambda (i) 'k)))
-
-;; Exhaustive bounded universe for multiplicative flow-completeness checks.
-;; len=2 => integers in [-4,4].
-(define bound (make-bound 2))
-(define maxabs (max-abs-for-len 2))
-(define ints (int-range (- maxabs) maxabs))
 
 (define flows '(bounds-bind-rel bounds-rel-bind bind-bounds-rel))
 
@@ -47,19 +42,24 @@
   (for/and ([g mask] [tv tuple] [pv partial])
     (if g (equal? tv pv) #t)))
 
-(define sat-tuples
-  (for*/list ([x ints]
-              [y ints]
-              [z ints]
-              #:when (= (* x y) z))
-    (list x y z)))
-
 (define (bind-int-if t maybe-int)
   (if maybe-int
       (== t (int->bt-term maybe-int))
       (== t t)))
 
-(define (run-flow flow partial)
+(define (context len)
+  (define b (make-bound len))
+  (define m (max-abs-for-len len))
+  (define is (int-range (- m) m))
+  (define sats
+    (for*/list ([x is]
+                [y is]
+                [z is]
+                #:when (= (* x y) z))
+      (list x y z)))
+  (list b is sats))
+
+(define (run-flow flow bound partial)
   (define x (list-ref partial 0))
   (define y (list-ref partial 1))
   (define z (list-ref partial 2))
@@ -103,36 +103,172 @@
         string<?
         #:key ~s))
 
-(test-case "bt assurance: *o satisfiable mode instances are flow-complete (len<=2)"
-  ;; For every satisfiable bounded grounding instance in every mode, each flow
-  ;; ordering must terminate and return the exact expected answer set.
-  (define timeout-ms 500)
-  (for* ([mask (bool-masks 3)]
-         #:do [(define indices (mask-indices mask))
-               (define assignments
-                 (if (null? indices)
-                     (list '())
-                     (cartesian-product
-                      (build-list (length indices) (lambda (i) ints)))))]
-         [as assignments]
-         #:do [(define partial (partial-from indices as 3))
-               (define expected
-                 (for/list ([tuple sat-tuples]
-                            #:when (matches-grounding? tuple mask partial))
-                   tuple))]
-         #:when (pair? expected))
-    (define expected* (sort expected string<? #:key ~s))
-    (for ([flow flows])
+(define (satisfiable-partials ints sat-tuples)
+  (for*/list ([mask (bool-masks 3)]
+              #:do [(define indices (mask-indices mask))
+                    (define assignments
+                      (if (null? indices)
+                          (list '())
+                          (cartesian-product
+                           (build-list (length indices) (lambda (i) ints)))))]
+              [as assignments]
+              #:do [(define partial (partial-from indices as 3))
+                    (define expected
+                      (for/list ([tuple sat-tuples]
+                                 #:when (matches-grounding? tuple mask partial))
+                        tuple))]
+              #:when (pair? expected))
+    (list mask partial expected)))
+
+(define (unsatisfiable-partials ints sat-tuples)
+  (for*/list ([mask (bool-masks 3)]
+              #:do [(define indices (mask-indices mask))
+                    (define assignments
+                      (if (null? indices)
+                          (list '())
+                          (cartesian-product
+                           (build-list (length indices) (lambda (i) ints)))))]
+              [as assignments]
+              #:do [(define partial (partial-from indices as 3))
+                    (define expected
+                      (for/list ([tuple sat-tuples]
+                                 #:when (matches-grounding? tuple mask partial))
+                        tuple))]
+              #:when (null? expected))
+    (list mask partial)))
+
+(define (take-unsat-representatives unsats [per-mask 12])
+  (define (score partial)
+    (for/sum ([x partial] #:when (integer? x)) (abs x)))
+  (define grouped (make-hash))
+  (for ([entry unsats])
+    (define mask (first entry))
+    (hash-set! grouped mask (cons entry (hash-ref grouped mask '()))))
+  (apply append
+         (for/list ([mask (hash-keys grouped)])
+           (define xs
+             (sort (reverse (hash-ref grouped mask))
+                   <
+                   #:key (lambda (e) (score (second e)))))
+           (take xs (min per-mask (length xs))))))
+
+(define (take-sat-representatives sats [per-mask 20])
+  (define (score partial)
+    (for/sum ([x partial] #:when (integer? x)) (abs x)))
+  (define grouped (make-hash))
+  (for ([entry sats])
+    (define mask (first entry))
+    (hash-set! grouped mask (cons entry (hash-ref grouped mask '()))))
+  (apply append
+         (for/list ([mask (hash-keys grouped)])
+           (define xs
+             (sort (reverse (hash-ref grouped mask))
+                   <
+                   #:key (lambda (e) (score (second e)))))
+           (take xs (min per-mask (length xs))))))
+
+(define (check-flow-complete len timeout-ms [per-mask #f] [flow-set flows])
+  (define ctx (context len))
+  (define bound (first ctx))
+  (define ints (second ctx))
+  (define sat-tuples (third ctx))
+  (define sat-cases0 (satisfiable-partials ints sat-tuples))
+  (define sat-cases
+    (if per-mask
+        (take-sat-representatives sat-cases0 per-mask)
+        sat-cases0))
+  (for ([entry sat-cases])
+    (define mask (first entry))
+    (define partial (second entry))
+    (define expected* (sort (third entry) string<? #:key ~s))
+    (for ([flow flow-set])
       (define-values (done? raw)
         (run-with-timeout timeout-ms
                           (lambda ()
-                            (run-flow flow partial))))
+                            (run-flow flow bound partial))))
       (unless done?
         (fail-check
-         (format "*o/~a timeout for mask ~a partial ~s"
-                 flow (mask->label mask) partial)))
+         (format "len~a/*o/~a timeout for mask ~a partial ~s"
+                 len flow (mask->label mask) partial)))
       (define got* (decoded-set raw))
       (unless (equal? got* expected*)
         (fail-check
-         (format "*o/~a mismatch for mask ~a partial ~s; expected ~s got ~s"
-                 flow (mask->label mask) partial expected* got*))))))
+         (format "len~a/*o/~a mismatch for mask ~a partial ~s; expected ~s got ~s"
+                 len flow (mask->label mask) partial expected* got*))))))
+
+(define (check-finite-failure-representatives len timeout-ms [flow-set flows])
+  (define ctx (context len))
+  (define bound (first ctx))
+  (define ints (second ctx))
+  (define sat-tuples (third ctx))
+  (define unsats (unsatisfiable-partials ints sat-tuples))
+  (define reps (take-unsat-representatives unsats 12))
+  (for ([entry reps])
+    (define mask (first entry))
+    (define partial (second entry))
+    (for ([flow flow-set])
+      (define-values (done? raw)
+        (run-with-timeout timeout-ms
+                          (lambda ()
+                            (run-flow flow bound partial))))
+      (unless done?
+        (fail-check
+         (format "len~a/*o/~a unsat timeout for mask ~a partial ~s"
+                 len flow (mask->label mask) partial)))
+      (unless (null? raw)
+        (fail-check
+         (format "len~a/*o/~a expected finite failure for mask ~a partial ~s; got ~s"
+                 len flow (mask->label mask) partial raw))))))
+
+(test-case "bt assurance: *o satisfiable mode instances are flow-complete (len<=2)"
+  ;; For every satisfiable bounded grounding instance in every mode, each flow
+  ;; ordering must terminate and return the exact expected answer set.
+  (check-flow-complete 2 500))
+
+(test-case "bt assurance: *o satisfiable mode instances are flow-complete (len<=3)"
+  ;; Confidence bump over a wider bounded universe.
+  ;; Use fixed representative satisfiable cases per mode mask to keep runtime
+  ;; practical while still checking every mode and flow ordering.
+  (check-flow-complete 3 1800 8 '(bounds-bind-rel bind-bounds-rel)))
+
+(test-case "bt assurance: *o representative finite-failure checks across flows (len<=3)"
+  ;; Full unsat exhaustiveness at len<=3 is expensive; this checks a fixed
+  ;; representative unsat set per mode mask and flow ordering.
+  (check-finite-failure-representatives 3 1800 '(bounds-bind-rel bind-bounds-rel)))
+
+(test-case "bt assurance: *o len<=3 bounds-rel-bind smoke checks"
+  ;; This flow ordering is much slower at len<=3, so keep it as a focused smoke
+  ;; check in addition to the fuller representative checks above.
+  (define len 3)
+  (define bound (make-bound len))
+  (define timeout-ms 12000)
+  (define sat-partials
+    '((1 1 1)
+      (-1 0 0)))
+  (define unsat-partials
+    '((1 1 2)
+      (0 -1 -1)))
+  (for ([partial sat-partials])
+    (define-values (done? raw)
+      (run-with-timeout timeout-ms
+                        (lambda ()
+                          (run-flow 'bounds-rel-bind bound partial))))
+    (unless done?
+      (fail-check
+       (format "len3/*o/bounds-rel-bind sat timeout for partial ~s" partial)))
+    (unless (pair? raw)
+      (fail-check
+       (format "len3/*o/bounds-rel-bind expected sat result for partial ~s"
+               partial))))
+  (for ([partial unsat-partials])
+    (define-values (done? raw)
+      (run-with-timeout timeout-ms
+                        (lambda ()
+                          (run-flow 'bounds-rel-bind bound partial))))
+    (unless done?
+      (fail-check
+       (format "len3/*o/bounds-rel-bind unsat timeout for partial ~s" partial)))
+    (unless (null? raw)
+      (fail-check
+       (format "len3/*o/bounds-rel-bind expected finite failure for partial ~s; got ~s"
+               partial raw)))))

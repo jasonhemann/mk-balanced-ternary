@@ -39,8 +39,11 @@ Purpose:
   - each case must terminate and return the exact expected bounded set.
 - Dedicated BT multiplicative flow-completeness checks:
   - exhaustive satisfiable mode instances for `*o` over len<=2,
-  - multiple conjunction flow orderings per case,
+  - representative satisfiable mode instances for `*o` over len<=3,
+  - full flow-order coverage at len<=2; representative flow-order coverage at len<=3,
   - each case must terminate and return the exact expected bounded set.
+  - representative finite-failure mode instances for `*o` over len<=3.
+  - focused `bounds-rel-bind` smoke checks at len<=3.
 
 Policy:
 - Engine usage is intentional for divergence testing.

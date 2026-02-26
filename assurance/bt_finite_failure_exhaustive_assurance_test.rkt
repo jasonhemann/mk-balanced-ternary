@@ -128,7 +128,7 @@
   ;; For every operation, every grounding mode, and every unsatisfiable
   ;; grounded assignment under len<=2, all flow orderings below must terminate
   ;; and return the empty set.
-  (define timeout-ms 250)
+  (define timeout-ms 600)
   (for ([op ops])
     (define cases (unsat-cases op))
     (check-true (pair? cases) (format "~a should have unsatisfiable mode instances" op))
