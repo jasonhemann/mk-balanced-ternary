@@ -138,7 +138,6 @@
 (defrel (not-oneo n)
   (conde
     [(== '(T) n)]
-    [(== '(0) n)]
     [(fresh (a d)
        (== `(,a . ,d) n)
        (nonzeroo d))]))

@@ -182,6 +182,8 @@
                 '(_.0))
   (check-equal? (run 10 (q) (*o '(1) q q))
                 '(() (_.0 . _.1)))
+  (check-equal? (run 10 (q) (*o q '(1) q))
+                '(() (1) (T) (_.0 _.1 . _.2)))
   (check-equal? (run 10 (q) (*o '(1) q '()))
                 '(()))
   (check-equal? (run 10 (q) (*o '(1) q '(1)))
