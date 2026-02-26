@@ -90,3 +90,21 @@
    bn-raw bn-expected
    (lambda (ans expected)
      (raw-bn-answer-coverage ans expected decode-bn-tuple))))
+
+(test-case "parity: right-identity orientation keeps mK asymmetry for pluso/minuso"
+  (check-equal?
+   (run 10 (q)
+     (bn:pluso q '() q))
+   '(_.0))
+  (check-equal?
+   (run 10 (q)
+     (bt:pluso q '() q))
+   '(_.0))
+  (check-equal?
+   (run 10 (q)
+     (bn:minuso q q '()))
+   '(_.0))
+  (check-equal?
+   (run 10 (q)
+     (bt:minuso q q '()))
+   '(_.0)))

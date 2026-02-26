@@ -110,12 +110,9 @@
   ;; non-trivial arithmetic to canonical shapes.
   (conde
     [(== '() x)
-     (== y z)
-     (conde
-       [(== y '())]
-       [(nonzeroo y)])]
+     (nonzeroo y)
+     (== y z)]
     [(== '() y)
-     (nonzeroo x)
      (== x z)]
     [(fresh (xa xd ya yd)
        (== `(,xa . ,xd) x)

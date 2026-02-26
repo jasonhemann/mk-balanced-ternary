@@ -8,6 +8,7 @@ Run with:
 - `raco test assurance/bt_harness_assurance_test.rkt`
 - `raco test assurance/bt_totality_assurance_test.rkt`
 - `raco test assurance/bt_finite_failure_exhaustive_assurance_test.rkt`
+- `raco test assurance/bt_primitives_finite_failure_assurance_test.rkt`
 
 Purpose:
 - Heavy randomized property checks over wider ranges.
@@ -24,6 +25,10 @@ Purpose:
   - fully open `*o` vvv bounded-completeness check over len<=3.
 - Dedicated BT finite-failure assurance checks:
   - exhaustive unsatisfiable mode instances for `pluso`/`minuso`/`*o` over len<=2,
+  - multiple conjunction flow orderings per case,
+  - each case must terminate and return empty.
+- Dedicated BT primitive finite-failure checks:
+  - exhaustive unsatisfiable mode instances for `add3o`, `mul1o`, and `nego`,
   - multiple conjunction flow orderings per case,
   - each case must terminate and return empty.
 

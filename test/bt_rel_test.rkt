@@ -168,9 +168,11 @@
   (check-equal? (run 10 (q) (pluso '() q q))
                 '(() (_.0 . _.1)))
   (check-equal? (run 10 (q) (pluso q '() q))
-                '(() (_.0 . _.1)))
+                '(_.0))
   (check-equal? (run* (q) (pluso '() q '()))
                 '(()))
+  (check-equal? (run 10 (q) (minuso q q '()))
+                '(_.0))
   (check-equal? (run* (q) (minuso '(1) '(1) q))
                 '(())))
 
