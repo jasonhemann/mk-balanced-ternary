@@ -5,7 +5,7 @@ These directives capture recurring implementation rules for arithmetic relations
 1. Keep representation-domain checks at representation boundaries.
    - In this codebase, keep explicit `trito` checks in boundary relations such as
      `canco`, `len<=o`, and `digit-stepo`.
-   - Rationale: dropping them causes undecodable/spurious bounded-mode answers.
+   - Rationale: dropping them weakens the numeral domain (non-trit terms can be admitted).
 
 2. Prefer equation-based structure checks over redundant destructuring.
    - Replacing `fresh` destructuring with helpers like `nonzeroo` is fine when the
@@ -26,5 +26,26 @@ These directives capture recurring implementation rules for arithmetic relations
 
 6. Keep an ablation test for critical boundary constraints.
    - The fast suite includes boundary ablations that intentionally remove
-     `trito` checks from bounded predicates and assert undecodable outputs appear.
+     `trito` checks from bounded predicates and assert non-trit terms are admitted.
    - This guards against accidentally weakening domain contracts in future edits.
+
+7. Treat partially instantiated answers as first-class semantics.
+   - BT harness checks should interpret symbolic answers denotationally against
+     bounded expected sets (rather than requiring concrete decode only).
+   - This matches the mK arithmetic style where generalized answers denote sets
+     of valid numerals.
+
+8. Preserve non-overlapping/well-formed clause structure at the bit/trit level.
+   - Prefer clauses that enforce well-formed numerals by construction in core
+     recurrences (mutatis mutandis from the binary suite).
+   - Avoid adding branches whose only effect is overlapping aliases of the same
+     denotation.
+
+9. Keep finite-failure guarantees scoped like the binary reference.
+   - Refutational completeness expectations are per relation invocation with
+     non-shared variables (and explicit bounds where required), not arbitrary
+     conjunctions with shared vars.
+
+10. Keep operational bounds inside the arithmetic relation family.
+   - Bound/ordering constraints should be relation-internal (or in designated
+     boundary helpers), not externally bolted on at random call sites.

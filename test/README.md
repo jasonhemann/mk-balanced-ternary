@@ -11,6 +11,12 @@ Composition:
     - includes canonical-surface regression checks for `pluso`/`minuso` zero-alias behavior
   - `bt_boundary_relations_test.rkt`
     - boundary/domain relation checks for `canco`, `canco-shapeo`, `digit-stepo`, and explicit trito-ablation demonstrations
+  - `bt_symbolic_denotation_test.rkt`
+    - bounded denotational checks that symbolic open-mode answers partition expected host sets (`pluso`, `*o` identity modes)
+  - `bt_bn_parity_test.rkt`
+    - side-by-side parity checks for counterintuitive open-mode symbolic answers, confirming BT behavior matches the legacy binary suite
+  - `bt_bn_prl_add_sub_parity_test.rkt`
+    - side-by-side parity checks for arith.prl/paper add/sub showcase cases (including finite-failure vs integer-extension differences)
   - `bt_harness_primitive_test.rkt`
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)
@@ -49,6 +55,13 @@ Binary harness classification policy:
 - Missing expected answers by `k2` emit warnings.
 - Timeouts on bounded finite checks emit warnings.
 - Warnings are printed per-case to keep regressions informative without failing on incompleteness.
+
+BT harness note:
+- Partially instantiated BT answers are expected in open modes.
+- `check-bt-case` interprets symbolic answers denotationally over the bounded
+  expected set (mK-style), instead of requiring concrete decode for every answer.
+- Current symbolic denotation fallback is implemented for BT-integer tuple
+  expectations and reified disequality constraints.
 
 Bounded-query policy:
 - Any query shape with potentially infinite solutions must be explicitly bounded in regression tests.

@@ -66,6 +66,8 @@ Required successful modes for current acceptance:
 - bounded inverse modes used by tests, for example:
   - ground `x,z` with variable `y` under explicit bound constraints.
   - explicit digit-length bounds are the default boundedness mechanism (for example, via `bto-boundedo` in `bt_rel.rkt`).
+- open-mode answers may be partially instantiated symbolic terms; acceptance is
+  by denotation under bounded domains, not by requiring every answer to be fully ground.
 
 Not required in current acceptance:
 - unbounded var/var termination.

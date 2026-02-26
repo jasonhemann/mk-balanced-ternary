@@ -62,40 +62,45 @@ Decoded result (same query):
 '((0) (-1) (1) (-4) (2) (-3) (-2) (3) (4))
 ```
 
-## 4) Answer normalization in harness checks
-
-Core ground arithmetic queries are expected to be deterministic. Example:
+Open-mode queries may return symbolic answers with a constraint store:
 
 ```racket
-(run* (q)
-  (fresh (qq rr)
-    (divo '(1 1) '(0 1) qq rr '(k k k))
-    (== q (list qq rr))))
-;; => '(((1) (1)))
+(run 5 (q) (pluso '() q q))
+;; => '(() (_.0 . _.1))
 ```
 
-The harness still normalizes answers with `remove-duplicates` defensively for larger open-mode queries.
+and with explicit reified disequalities:
 
-## 5) Euclidean division semantics
+```racket
+(run 5 (q) (canco-shapeo q))
+;; => '(() ((_.0) (=/= ((_.0 0)))) ...)
+```
 
-`divo n m q r bound` (in `/Users/jhemann/Code/mk-balanced-ternary/src/bt_rel.rkt`) uses:
+Those are valid relational answers. They denote sets of BT numerals.
 
-- `m != 0`
-- `n = m*q + r`
-- `0 <= r < |m|`
+## 4) Answer normalization in harness checks
 
-This is the chosen division convention for BT work in this repo.
+Core ground arithmetic queries are deterministic. Open-mode queries may be symbolic.
 
-Current surface note:
-- Primary relation name is `divo`.
-- `divo-boundedo` is kept as a compatibility alias while older call sites are phased out.
+The BT harness compares answers denotationally over bounded expected sets:
 
-Current fast-suite coverage for division:
-- `test/bt_order_div_test.rkt`: denotational Euclidean checks and deterministic ground cases.
-- `test/bt_div_mode_matrix_test.rkt`: bounded grounding-mode matrix.
-- `test/bt_div_exhaustive_mode_test.rkt`: bounded exhaustive `run*` mode checks with host-denotation equality.
-- `test/bt_finite_failure_test.rkt`: bounded finite-failure mode matrix.
-- `test/bt_signed_valence_test.rkt`: cross-sign regression cases.
+```racket
+(check-bt-case
+ "symbolic/pluso/id"
+ #:expected-set (lambda () (for/list ([n (in-range -4 5)]) (list n)))
+ #:run-observed (lambda (limit) (run limit (q) (pluso '() q q))))
+```
+
+So partial answers are treated as first-class semantics (mK style), not rejected just because they are non-ground.
+
+## 5) Division status (currently parked)
+
+Euclidean division remains the intended design (`n = m*q + r`, `m != 0`, `0 <= r < |m|`), but the active development focus is currently below division.
+
+Implementation/test status:
+- `divo` calls are currently parked behind `ENABLE-BT-DIVO? = #f`.
+- Division-focused tests are parked behind `ENABLE-BT-DIVO-TESTS? = #f`.
+- Ordering/absolute-value bounded checks remain active.
 
 ## 6) Practical query templates
 
@@ -128,4 +133,4 @@ Bounded solve for factor pairs:
 - Canonicality matters: terms ending in MS `0` are non-canonical unless `()`.
 - `pluso`/`minuso` are canonical-domain surfaces: non-canonical numeral inputs are out of domain, and zero-alias outputs like `(0)` should not appear.
 - Bounded runs are the intended mode for completeness/failure claims.
-- Harness comparisons normalize answer sets before denotational checks.
+- Harness comparisons are denotational for both concrete and symbolic answers (within bounded expected sets).

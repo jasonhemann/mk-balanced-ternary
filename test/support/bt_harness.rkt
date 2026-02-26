@@ -14,6 +14,7 @@
          cartesian-product
          decode-bt
          decode-bt-tuple
+         raw-answer-coverage
          bto-boundo
          reset-bt-warnings!
          bt-warnings
@@ -156,17 +157,136 @@
   (for/list ([raw raw-answers])
     (decode-answer raw)))
 
-(define (check-spurious! case-name expected decoded raw-answers)
-  (for ([ans decoded]
-        [raw raw-answers])
-    (when (false? ans)
-      (fail-check
-       (format "~a: undecodable answer observed: ~s"
-               case-name raw)))
-    (unless (member ans expected equal?)
-      (fail-check
-       (format "~a: spurious answer observed: ~s (decoded ~s)"
-               case-name raw ans)))))
+(define (logic-var-symbol? x)
+  (and (symbol? x)
+       (regexp-match? #px"^_\\.?[0-9]+$" (symbol->string x))))
+
+(define (known-constraint? x)
+  (and (pair? x)
+       (symbol? (car x))
+       (member (car x) '(=/=) eq?)))
+
+(define (split-raw-answer raw)
+  (if (and (pair? raw)
+           (pair? (cdr raw))
+           (andmap known-constraint? (cdr raw)))
+      (values (car raw) (cdr raw))
+      (values raw '())))
+
+(define (walk-subst t subst)
+  (cond
+    [(logic-var-symbol? t)
+     (define hit (hash-ref subst t #f))
+     (if hit (walk-subst hit subst) t)]
+    [else t]))
+
+(define (walk* t subst)
+  (define w (walk-subst t subst))
+  (cond
+    [(pair? w)
+     (cons (walk* (car w) subst)
+           (walk* (cdr w) subst))]
+    [else w]))
+
+(define (ground-without-vars? t)
+  (cond
+    [(logic-var-symbol? t) #f]
+    [(pair? t)
+     (and (ground-without-vars? (car t))
+          (ground-without-vars? (cdr t)))]
+    [else #t]))
+
+(define (unify-pattern pat val subst)
+  (define p (walk-subst pat subst))
+  (cond
+    [(logic-var-symbol? p)
+     (hash-set subst p val)]
+    [(pair? p)
+     (and (pair? val)
+          (let ([s1 (unify-pattern (car p) (car val) subst)])
+            (and s1 (unify-pattern (cdr p) (cdr val) s1))))]
+    [(null? p)
+     (and (null? val) subst)]
+    [else
+     (and (equal? p val) subst)]))
+
+(define (disequality-ok? c subst)
+  (cond
+    [(and (equal? (car c) '=/=)
+          (= (length c) 2)
+          (list? (second c)))
+     (for/and ([pair (second c)])
+       (and (list? pair)
+            (= (length pair) 2)
+            (let* ([lhs (walk* (first pair) subst)]
+                   [rhs (walk* (second pair) subst)])
+              (not (and (ground-without-vars? lhs)
+                        (ground-without-vars? rhs)
+                        (equal? lhs rhs))))))]
+    [else #f]))
+
+(define (constraints-ok? constraints subst)
+  (for/and ([c constraints])
+    (disequality-ok? c subst)))
+
+(define (expected->bt-term maybe-tuple)
+  (cond
+    [(and (list? maybe-tuple)
+          (andmap integer? maybe-tuple))
+     (if (= (length maybe-tuple) 1)
+         (int->bt-term (first maybe-tuple))
+         (map int->bt-term maybe-tuple))]
+    [else #f]))
+
+(define (covered-expected-by-raw raw expected)
+  (define-values (term constraints) (split-raw-answer raw))
+  (define expected-terms
+    (for/list ([want expected])
+      (cons want (expected->bt-term want))))
+  (if (ormap (lambda (x) (false? (cdr x))) expected-terms)
+      #f
+      (for/list ([entry expected-terms]
+                 #:when
+                 (let* ([want-term (cdr entry)]
+                        [subst (unify-pattern term want-term (hash))])
+                   (and subst (constraints-ok? constraints subst))))
+        (car entry))))
+
+(define (raw-answer-coverage raw expected [decode-answer decode-bt-tuple])
+  (define decoded (decode-answer raw))
+  (cond
+    [(not (false? decoded))
+     (if (member decoded expected equal?) (list decoded) '())]
+    [else
+     (covered-expected-by-raw raw expected)]))
+
+(define (normalize-observed! case-name expected decode-answer raw-answers)
+  (define covered '())
+  (for ([raw raw-answers])
+    (define decoded (decode-answer raw))
+    (cond
+      [(not (false? decoded))
+       (unless (member decoded expected equal?)
+         (fail-check
+          (format "~a: spurious answer observed: ~s (decoded ~s)"
+                  case-name raw decoded)))
+       (set! covered (cons decoded covered))]
+      [else
+       ;; Fallback for partially instantiated answers: compare denotation
+       ;; against the finite expected set under BT-domain bounds.
+       (define denotation (covered-expected-by-raw raw expected))
+       (cond
+         [(false? denotation)
+          (fail-check
+           (format "~a: symbolic answer unsupported for current expected-set shape: ~s"
+                   case-name raw))]
+         [(null? denotation)
+          (fail-check
+           (format "~a: spurious symbolic answer observed: ~s"
+                   case-name raw))]
+         [else
+          (set! covered (append denotation covered))])]))
+  (normalize-set covered))
 
 (define (check-bt-case case-name
                        #:expected-set [expected-set (lambda () '())]
@@ -200,8 +320,7 @@
                           (run-observed k2))))
 
     (unless timed-out-k?
-      (define decoded-k (normalize-set (decode-observed decode-answer raw-k)))
-      (check-spurious! case-name expected decoded-k raw-k))
+      (void (normalize-observed! case-name expected decode-answer raw-k)))
 
     (cond
       [timed-out-k?
@@ -211,17 +330,16 @@
        (emit-warning! 'timeout case-name
                       (format "run ~a timed out at ~ams" k2 timeout-ms))]
       [else
-       (define decoded-k2
-         (normalize-set (decode-observed decode-answer raw-k2)))
-       (check-spurious! case-name expected decoded-k2 raw-k2)
+       (define covered-k2
+         (normalize-observed! case-name expected decode-answer raw-k2))
 
-       (when (and (pair? expected) (null? decoded-k2))
+       (when (and (pair? expected) (null? covered-k2))
          (emit-warning! 'missing case-name
                         "expected non-empty result set, observed empty by k2"))
 
        (define missing
          (filter (lambda (want)
-                   (not (member want decoded-k2 equal?)))
+                   (not (member want covered-k2 equal?)))
                  expected))
        (when (pair? missing)
          (emit-warning! 'missing case-name

@@ -57,15 +57,29 @@
 ;; Ablation checks
 ;; ------------------------------------------------------------
 
-(test-case "bt boundary ablation: removing trito from canco/len<=o yields undecodable numerals"
-  (define bad-raw
-    (run 20 (q)
-      (bad-bto-boundedo q bound2)))
-  (define bad-decoded
-    (map bt->int-term bad-raw))
-  (check-true
-   (ormap false? bad-decoded)
-   "expected at least one undecodable numeral without boundary trito checks")
+(test-case "bt boundary ablation: removing trito from canco/len<=o admits non-trit concrete terms"
+  ;; Under pure implicit constraints, these bad terms should be out of domain;
+  ;; without trito boundary checks they are accepted by the ablated relation.
+  (check-equal?
+   (run* (q)
+     (bad-bto-boundedo '(apple) '(k))
+     (== q 'ok))
+   '(ok))
+  (check-equal?
+   (run* (q)
+     (bad-bto-boundedo '(1 apple) '(k k))
+     (== q 'ok))
+   '(ok))
+  (check-equal?
+   (run* (q)
+     (bto-boundedo '(apple) '(k))
+     (== q 'ok))
+   '())
+  (check-equal?
+   (run* (q)
+     (bto-boundedo '(1 apple) '(k k))
+     (== q 'ok))
+   '())
 
   (define good-raw
     (run* (q)
@@ -79,32 +93,27 @@
    (sort (remove-duplicates good-decoded equal?) <)
    ints2))
 
-(test-case "bt boundary ablation: removing trito from digit-stepo yields undecodable equality pairs"
-  (define bad-raw
-    (run 40 (q)
-      (fresh (x y)
-        (bad-bto-boundedo x bound2)
-        (bad-bto-boundedo y bound2)
-        (bad-eq-boundedo x y bound2)
-        (== q (list x y)))))
-  (define bad-decoded
-    (map decode-bt-tuple bad-raw))
-  (check-true
-   (ormap false? bad-decoded)
-   "expected at least one undecodable pair without boundary trito checks")
-
-  (define good-raw
-    (run 40 (q)
-      (fresh (x y)
-        (bto-boundedo x bound2)
-        (bto-boundedo y bound2)
-        (eq-boundedo x y bound2)
-        (== q (list x y)))))
-  (define good-decoded
-    (map decode-bt-tuple good-raw))
-  (check-true
-   (andmap (lambda (x) (not (false? x))) good-decoded)
-   "all bounded equality pairs should decode under non-ablated boundary relations"))
+(test-case "bt boundary ablation: removing trito from digit-stepo admits non-trit digits"
+  (check-equal?
+   (run* (q)
+     (bad-digit-stepo '(apple) 'apple '())
+     (== q 'ok))
+   '(ok))
+  (check-equal?
+   (run* (q)
+     (digit-stepo '(apple) 'apple '())
+     (== q 'ok))
+   '())
+  (check-equal?
+   (run* (q)
+     (bad-eq-boundedo '(apple) '(apple) '(k))
+     (== q 'ok))
+   '(ok))
+  (check-equal?
+   (run* (q)
+     (eq-boundedo '(apple) '(apple) '(k))
+     (== q 'ok))
+   '()))
 
 ;; ------------------------------------------------------------
 ;; Boundary relation mode matrix checks

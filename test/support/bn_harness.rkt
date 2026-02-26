@@ -12,6 +12,7 @@
          cartesian-product
          decode-bn
          decode-bn-tuple
+         raw-bn-answer-coverage
          bno-boundo
          reset-bn-warnings!
          bn-warnings
@@ -152,6 +153,109 @@
 (define (decode-observed decode-answer raw-answers)
   (for/list ([raw raw-answers])
     (decode-answer raw)))
+
+(define (logic-var-symbol? x)
+  (and (symbol? x)
+       (regexp-match? #px"^_\\.?[0-9]+$" (symbol->string x))))
+
+(define (known-constraint? x)
+  (and (pair? x)
+       (symbol? (car x))
+       (member (car x) '(=/=) eq?)))
+
+(define (split-raw-answer raw)
+  (if (and (pair? raw)
+           (pair? (cdr raw))
+           (andmap known-constraint? (cdr raw)))
+      (values (car raw) (cdr raw))
+      (values raw '())))
+
+(define (walk-subst t subst)
+  (cond
+    [(logic-var-symbol? t)
+     (define hit (hash-ref subst t #f))
+     (if hit (walk-subst hit subst) t)]
+    [else t]))
+
+(define (walk* t subst)
+  (define w (walk-subst t subst))
+  (cond
+    [(pair? w)
+     (cons (walk* (car w) subst)
+           (walk* (cdr w) subst))]
+    [else w]))
+
+(define (ground-without-vars? t)
+  (cond
+    [(logic-var-symbol? t) #f]
+    [(pair? t)
+     (and (ground-without-vars? (car t))
+          (ground-without-vars? (cdr t)))]
+    [else #t]))
+
+(define (unify-pattern pat val subst)
+  (define p (walk-subst pat subst))
+  (cond
+    [(logic-var-symbol? p)
+     (hash-set subst p val)]
+    [(pair? p)
+     (and (pair? val)
+          (let ([s1 (unify-pattern (car p) (car val) subst)])
+            (and s1 (unify-pattern (cdr p) (cdr val) s1))))]
+    [(null? p)
+     (and (null? val) subst)]
+    [else
+     (and (equal? p val) subst)]))
+
+(define (disequality-ok? c subst)
+  (cond
+    [(and (equal? (car c) '=/=)
+          (= (length c) 2)
+          (list? (second c)))
+     (for/and ([pair (second c)])
+       (and (list? pair)
+            (= (length pair) 2)
+            (let* ([lhs (walk* (first pair) subst)]
+                   [rhs (walk* (second pair) subst)])
+              (not (and (ground-without-vars? lhs)
+                        (ground-without-vars? rhs)
+                        (equal? lhs rhs))))))]
+    [else #f]))
+
+(define (constraints-ok? constraints subst)
+  (for/and ([c constraints])
+    (disequality-ok? c subst)))
+
+(define (expected->bn-term maybe-tuple)
+  (cond
+    [(and (list? maybe-tuple)
+          (andmap exact-nonnegative-integer? maybe-tuple))
+     (if (= (length maybe-tuple) 1)
+         (nat->bn (first maybe-tuple))
+         (map nat->bn maybe-tuple))]
+    [else #f]))
+
+(define (covered-expected-by-raw raw expected)
+  (define-values (term constraints) (split-raw-answer raw))
+  (define expected-terms
+    (for/list ([want expected])
+      (cons want (expected->bn-term want))))
+  (if (ormap (lambda (x) (false? (cdr x))) expected-terms)
+      #f
+      (for/list ([entry expected-terms]
+                 #:when
+                 (let* ([want-term (cdr entry)]
+                        [subst (unify-pattern term want-term (hash))])
+                   (and subst (constraints-ok? constraints subst))))
+        (car entry))))
+
+(define (raw-bn-answer-coverage raw expected [decode-answer decode-bn-tuple])
+  (define decoded (decode-answer raw))
+  (cond
+    [(not (false? decoded))
+     (if (member decoded expected equal?) (list decoded) '())]
+    [else
+     (covered-expected-by-raw raw expected)]))
 
 (define (check-spurious! case-name expected decoded raw-answers)
   (for ([ans decoded]

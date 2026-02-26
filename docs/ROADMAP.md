@@ -19,6 +19,10 @@ Exit criteria:
 - Slow assurance suite (`raco test assurance`) passes.
 - Any current gaps are tracked as explicit follow-up tasks.
 
+Current pause:
+- BT division is temporarily parked while we harden symbolic-denotational
+  harness behavior and boundary/domain contracts.
+
 ## Planned follow-on phases
 
 ### M1.25 Binary harness hardening (immediate pre-BT step)
@@ -45,19 +49,23 @@ Suggested immediate next step:
 Progress:
 - Started: BT harness skeleton added with fast (`test/bt_harness_*.rkt`) and assurance (`assurance/bt_harness_assurance_test.rkt`) tracks.
 - Implemented: bounded BT mode-matrix tests through `*o` (`test/bt_mode_bounds_test.rkt`) covering all grounding patterns under explicit digit-length bounds.
-- Implemented: bounded ordering/absolute/division kernel (`lto-boundedo`, `abso-boundedo`, `divo`) with Euclidean remainder tests in `test/bt_order_div_test.rkt`.
+- Implemented: bounded ordering/absolute kernel (`lto-boundedo`, `abso-boundedo`) and the initial Euclidean division kernel (`divo`).
 - Implemented: bounded finite-failure matrix (`test/bt_finite_failure_test.rkt`) that enumerates grounding modes with unsatisfiable instances and asserts finite failure.
 - Implemented: bounded totality/completeness checks for multiplication (`test/bt_totality_test.rkt`), including exhaustive factorization of 12 and mode-matrix coverage.
 - Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
-- Implemented: bounded Euclidean `divo` mode matrix for representative sign cases (`test/bt_div_mode_matrix_test.rkt`).
-- Implemented: exhaustive bounded `run*` mode checks for `divo` with denotational set equality against host semantics (`test/bt_div_exhaustive_mode_test.rkt`).
-- Implemented: explicit cross-sign valence regression checks (`test/bt_signed_valence_test.rkt`) for add/subtract/multiply/divide, including subtract-negatives and mixed-sign inverse modes.
+- Parked: bounded Euclidean `divo` mode matrix and exhaustive bounded `run*` checks (`test/bt_div_mode_matrix_test.rkt`, `test/bt_div_exhaustive_mode_test.rkt`).
+- Parked: division portions of signed valence and finite-failure matrices.
 - Implemented: tightened carry-construction pruning in `pluso` (`sum-trim0o`) to remove duplicate proof paths that propagated into division answers.
-- Implemented: explicit deterministic-ground regression checks for Euclidean division (`test/bt_order_div_test.rkt`).
-- Implemented: promoted Euclidean `divo` as the primary division relation surface (with `divo-boundedo` compatibility alias).
-- Next: add assurance-level larger-bound `divo` completeness/termination checks mirroring the new exhaustive fast-suite structure.
+- Parked: explicit deterministic-ground regression checks for Euclidean division.
+- Implemented: symbolic denotational harness handling for partially instantiated answers (mK-style) and explicit boundary ablation tests.
+- Next: complete symbolic-answer partition/non-overlap checks for key open modes before re-enabling division.
 
 Immediate worklist (API-shape and relationality cleanup):
+- Harden symbolic-answer partition checks (exact denotation + non-overlap) for
+  `pluso`/`*o` open identity modes.
+- Keep boundary domain guards explicit and test-backed (via ablation checks)
+  while arithmetic surfaces stay as implicit-domain as possible.
+- Re-enable `divo` only after symbolic harness invariants remain stable.
 - Remove exposed bound parameter from the public Euclidean division surface (target public arity: `divo n m q r`).
 - Move required bound/canonical constraints inside the arithmetic relation implementation path, so callers are not forced to add extra conjunctions for core arithmetic behavior.
 - Keep deterministic ground canonical behavior while documenting partial-term behavior explicitly (ground uniqueness vs. open-term denotation).
