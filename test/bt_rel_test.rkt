@@ -163,15 +163,27 @@
     ;; expected should appear (within the bound) unless bound too small
     (check-not-false (member expected sols bt=?))))
 
-(test-case "pluso/minuso canonical surface: no non-canonical zero aliases"
+(test-case "pluso/minuso keep mK-style most-general answers"
+  ;; Like classic mK numbers, identity queries should not force digit grounding.
+  (check-equal? (run 10 (q) (pluso '() q q))
+                '(() (_.0 . _.1)))
+  (check-equal? (run 10 (q) (pluso q '() q))
+                '(() (_.0 . _.1)))
   (check-equal? (run* (q) (pluso '() q '()))
                 '(()))
   (check-equal? (run* (q) (minuso '(1) '(1) q))
+                '(())))
+
+(test-case "*o mK-style zero and identity surfaces"
+  ;; Keep open-mode generality in identity modes, matching the binary suite style.
+  (check-equal? (run 10 (q) (*o '() q '()))
+                '(_.0))
+  (check-equal? (run 10 (q) (*o '(1) q q))
+                '(() (_.0 . _.1)))
+  (check-equal? (run 10 (q) (*o '(1) q '()))
                 '(()))
-  (check-equal? (run* (q) (pluso '(0) '() q))
-                '())
-  (check-equal? (run* (q) (minuso '() '(0) q))
-                '()))
+  (check-equal? (run 10 (q) (*o '(1) q '(1)))
+                '((1))))
 
 ;; ----------------------------
 ;; *o property tests

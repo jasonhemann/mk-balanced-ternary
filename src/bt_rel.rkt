@@ -71,22 +71,19 @@
   (conde
     ;; Identity when one addend is exhausted and carry is zero.
     [(== cin '0) (== '() x)
-     (fresh (a d)
-       (== y `(,a . ,d))
-       (== y z))]
+     (== y z)
+     (nonzeroo y)]
     [(== cin '0) (== '() y)
      (== x z)]
     ;; Carry propagation when one addend is exhausted.
     [(== cin '1) (== '() x)
-     (fresh (a d)
-       (== y `(,a . ,d))
-       (add-carryo '(1) y '0 z))]
+     (nonzeroo y)
+     (add-carryo '(1) y '0 z)]
     [(== cin '1) (== '() y)
      (add-carryo x '(1) '0 z)]
     [(== cin 'T) (== '() x)
-     (fresh (a d)
-       (== y `(,a . ,d))
-       (add-carryo '(T) y '0 z))]
+     (nonzeroo y)
+     (add-carryo '(T) y '0 z)]
     [(== cin 'T) (== '() y)
      (add-carryo x '(T) '0 z)]
     [(fresh (a xrest b yrest s cout zrest)
@@ -103,19 +100,30 @@
     [(== z `(,s . ,zrest))
      (conde
        [(=/= s '0)]
-       [(== s '0)
-        (fresh (a d) (== zrest `(,a . ,d)))])]))
+       [(== s '0) (nonzeroo zrest)])]))
 
 (defrel (pluso-raw x y z)
   (add-carryo x y '0 z))
 
 (defrel (pluso x y z)
-  ;; Canonical domain checks run after arithmetic constraints so open-mode
-  ;; queries do not enumerate canonical numerals up front.
-  (pluso-raw x y z)
-  (canco x)
-  (canco y)
-  (canco z))
+  ;; Preserve mK-style open identity answers while still constraining
+  ;; non-trivial arithmetic to canonical shapes.
+  (conde
+    [(== '() x)
+     (== y z)
+     (conde
+       [(== y '())]
+       [(nonzeroo y)])]
+    [(== '() y)
+     (nonzeroo x)
+     (== x z)]
+    [(fresh (xa xd ya yd)
+       (== `(,xa . ,xd) x)
+       (== `(,ya . ,yd) y)
+       (pluso-raw x y z)
+       (canco-shapeo x)
+       (canco-shapeo y)
+       (canco-shapeo z))]))
 
 (defrel (minuso x y z)
   (pluso y z x))
@@ -126,25 +134,40 @@
     [(== b '1) (== out x)]
     [(== b 'T) (nego x out)]))
 
+(defrel (nonzeroo n)
+  (fresh (a d)
+    (== `(,a . ,d) n)))
+
+(defrel (not-oneo n)
+  (conde
+    [(== '(T) n)]
+    [(== '(0) n)]
+    [(fresh (a d)
+       (== `(,a . ,d) n)
+       (nonzeroo d))]))
+
 (defrel (*o x y z)
   (conde
     [(== '() x) (== '() z)]
-    [(== '() y) (== '() z)]
+    [(nonzeroo x) (== '() z) (== '() y)]
+    [(== '(1) x) (nonzeroo y) (== y z)]
+    [(== '(1) y) (not-oneo x) (== x z)]
     [(fresh (b0 yrest xb0 xyrest shifted)
+       (nonzeroo x)
+       (nonzeroo z)
+       (not-oneo x)
+       (not-oneo y)
        (== `(,b0 . ,yrest) y)
        (mul1o x b0 xb0)
        (*o x yrest xyrest)
        (shift3o xyrest shifted)
-       (pluso xb0 shifted z)
-       (canco z))]))
+       (pluso xb0 shifted z))]))
 
 ;; Multiply by 3 (one trit shift) while keeping canonical zero.
 (defrel (shift3o n out)
   (conde
     [(== n '()) (== out '())]
-    [(fresh (a d)
-       (== n `(,a . ,d))
-       (== out `(0 . ,n)))]))
+    [(nonzeroo n) (== out `(0 . ,n))]))
 
 ;; Canonical: empty or last digit nonzero.
 (defrel (canco bt)
@@ -155,9 +178,20 @@
        (trito d)
        (conde
          [(== rest '()) (=/= d '0)]
-         [(fresh (a b)
-            (== rest `(,a . ,b))
-            (canco rest))]))]))
+         [(nonzeroo rest)
+          (canco rest)]))]))
+
+;; Canonical shape only: used on arithmetic surfaces to avoid forcing trit
+;; grounding in open modes.
+(defrel (canco-shapeo bt)
+  (conde
+    [(== bt '())]
+    [(fresh (d rest)
+       (== bt (cons d rest))
+       (conde
+         [(== rest '()) (=/= d '0)]
+         [(nonzeroo rest)
+          (canco-shapeo rest)]))]))
 
 ;; Length-bounded canonical BT numeral. The bound is represented as a
 ;; ground list, and the numeral length must be <= the bound length.
@@ -181,11 +215,8 @@
 (defrel (digit-stepo n d rest)
   (conde
     [(== n '()) (== d '0) (== rest '())]
-    [(fresh (a r)
-       (== n `(,a . ,r))
-       (trito a)
-       (== d a)
-       (== rest r))]))
+    [(== n `(,d . ,rest))
+     (trito d)]))
 
 (defrel (digit<o a b)
   (conde
@@ -196,11 +227,10 @@
 (defrel (eq-boundedo x y bound)
   (conde
     [(== bound '())]
-    [(fresh (h t dx dy xr yr)
+    [(fresh (h t dxy xr yr)
        (== bound `(,h . ,t))
-       (digit-stepo x dx xr)
-       (digit-stepo y dy yr)
-       (== dx dy)
+       (digit-stepo x dxy xr)
+       (digit-stepo y dxy yr)
        (eq-boundedo xr yr t))]))
 
 ;; Strict total order over BT numerals constrained by a shared digit-length bound.
@@ -239,7 +269,7 @@
   (bto-boundedo m bound)
   (bto-boundedo q bound)
   (bto-boundedo r bound)
-  (=/= m '())
+  (nonzeroo m)
   (fresh (prod am)
     (*o m q prod)
     (pluso prod r n)
