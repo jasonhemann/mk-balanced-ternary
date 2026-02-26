@@ -11,6 +11,7 @@ Run with:
 - `raco test assurance/bt_primitives_finite_failure_assurance_test.rkt`
 - `raco test assurance/bt_additive_flow_exhaustive_assurance_test.rkt`
 - `raco test assurance/bt_mul_flow_exhaustive_assurance_test.rkt`
+- `raco test assurance/bt_mul_mode_profile_assurance_test.rkt`
 
 Purpose:
 - Heavy randomized property checks over wider ranges.
@@ -44,6 +45,10 @@ Purpose:
   - each case must terminate and return the exact expected bounded set.
   - representative finite-failure mode instances for `*o` over len<=3.
   - focused `bounds-rel-bind` smoke checks at len<=3.
+- Dedicated BT multiplicative mode-profile checks:
+  - per-query completion budgets for representative `*o` modes (`ggv`, `vgg`, `gvg`, `vvg`) at len<=3,
+  - exact bounded answer-set comparison against host arithmetic,
+  - designed to catch operational regressions early without involving `/o`.
 
 Policy:
 - Engine usage is intentional for divergence testing.
