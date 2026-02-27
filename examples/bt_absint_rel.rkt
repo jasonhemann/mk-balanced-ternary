@@ -30,63 +30,54 @@
 ;;   '(x y z) => x:'(), y:'(s), z:'(s s).
 
 ;; Host helpers for playground/tests.
+;; build-idx : Natural -> Idx
 (define (build-idx n)
-  (unless (and (integer? n) (>= n 0))
-    (error 'build-idx "expected natural, got: ~a" n))
   (if (zero? n)
       '()
       `(s . ,(build-idx (sub1 n)))))
 
+;; build-fuel : Natural -> Fuel
 (define (build-fuel n)
-  (unless (and (integer? n) (>= n 0))
-    (error 'build-fuel "expected natural, got: ~a" n))
   (build-list n (lambda (_) 'tick)))
 
+;; build-ival : Integer Integer -> IVal
 (define (build-ival lo hi)
   (cons (build-num lo) (build-num hi)))
 
+;; build-state : (Listof (Pairof Integer Integer)) -> State
 (define (build-state int-intervals)
   (for/list ([p int-intervals])
-    (unless (and (pair? p)
-                 (integer? (car p))
-                 (integer? (cdr p))
-                 (<= (car p) (cdr p)))
-      (error 'build-state "expected (cons lo hi) with lo<=hi, got: ~a" p))
     (build-ival (car p) (cdr p))))
 
+;; max-abs-from-bound : Bound -> Natural
 (define (max-abs-from-bound bound)
   (/ (- (expt 3 (length bound)) 1) 2))
 
+;; top-interval-from-bound : Bound -> IVal
 (define (top-interval-from-bound bound)
   (define m (max-abs-from-bound bound))
   (build-ival (- m) m))
 
+;; make-top-state : Natural Bound -> State
 (define (make-top-state vars bound)
-  (unless (and (integer? vars) (>= vars 0))
-    (error 'make-top-state "expected natural var count, got: ~a" vars))
   (build-list vars (lambda (_) (top-interval-from-bound bound))))
 
-(define (unique-symbol-list? xs)
-  (and (andmap symbol? xs)
-       (= (length xs) (length (remove-duplicates xs)))))
-
+;; build-var-env : (Listof Symbol) -> (Hash Symbol Idx)
 (define (build-var-env vars)
-  (unless (unique-symbol-list? vars)
-    (error 'build-var-env "expected distinct symbols, got: ~a" vars))
   (for/hash ([x vars] [i (in-naturals)])
     (values x (build-idx i))))
 
-(define (lookup-var-index env who x)
-  (hash-ref env x
-            (lambda ()
-              (error who "unknown variable: ~a" x))))
+;; lookup-var-index : (Hash Symbol Idx) Symbol -> Idx
+(define (lookup-var-index env x)
+  (hash-ref env x))
 
+;; surface->expr/env : (Hash Symbol Idx) SurfaceExpr -> Expr
 (define (surface->expr/env env e)
   (match e
     [(? integer? n)
      `(lit ,(build-num n))]
     [(? symbol? x)
-     `(var ,(lookup-var-index env 'surface->expr/env x))]
+     `(var ,(lookup-var-index env x))]
     [`(+ ,e1 ,e2)
      `(add ,(surface->expr/env env e1)
            ,(surface->expr/env env e2))]
@@ -98,29 +89,28 @@
            ,(surface->expr/env env e1))]
     [`(* ,e1 ,e2)
      `(mul ,(surface->expr/env env e1)
-           ,(surface->expr/env env e2))]
-    [_ (error 'surface->expr/env "bad surface expression: ~a" e)]))
+           ,(surface->expr/env env e2))]))
 
+;; surface-test->expr/env : (Hash Symbol Idx) SurfaceTest -> Expr
 (define (surface-test->expr/env env t)
   (match t
     [`(< ,e 0) (surface->expr/env env e)]
     [`(negative? ,e) (surface->expr/env env e)]
-    [`(neg? ,e) (surface->expr/env env e)]
-    [_ (error 'surface-test->expr/env
-              "expected (< e 0) or (negative? e), got: ~a"
-              t)]))
+    [`(neg? ,e) (surface->expr/env env e)]))
 
+;; seqify : (Listof Stmt) -> Stmt
 (define (seqify stmts)
   (cond
     [(null? stmts) '(skip)]
     [(null? (cdr stmts)) (car stmts)]
     [else `(seq ,(car stmts) ,(seqify (cdr stmts)))]))
 
+;; surface->stmt/env : (Hash Symbol Idx) SurfaceStmt -> Stmt
 (define (surface->stmt/env env s)
   (match s
     ['skip '(skip)]
     [`(set! ,x ,e)
-     `(assign ,(lookup-var-index env 'surface->stmt/env x)
+     `(assign ,(lookup-var-index env x)
               ,(surface->expr/env env e))]
     [`(begin . ,ss)
      (seqify (map (lambda (st) (surface->stmt/env env st)) ss))]
@@ -130,12 +120,13 @@
               ,(surface->stmt/env env s2))]
     [`(while ,tst ,body)
      `(while-neg ,(surface-test->expr/env env tst)
-                 ,(surface->stmt/env env body))]
-    [_ (error 'surface->stmt/env "bad surface statement: ~a" s)]))
+                 ,(surface->stmt/env env body))]))
 
+;; surface->expr : (Listof Symbol) SurfaceExpr -> Expr
 (define (surface->expr vars e)
   (surface->expr/env (build-var-env vars) e))
 
+;; surface->stmt : (Listof Symbol) SurfaceStmt -> Stmt
 (define (surface->stmt vars s)
   (surface->stmt/env (build-var-env vars) s))
 
