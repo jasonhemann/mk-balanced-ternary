@@ -95,11 +95,11 @@ So partial answers are treated as first-class semantics (mK style), not rejected
 
 ## 5) Division status (active)
 
-Euclidean division is active via bounded `divo`:
+Euclidean division is active via `divo`:
 
-- relation shape: `(divo n m q r bound)`
+- relation shape: `(divo n m q r)`
 - semantics: `n = m*q + r`, `m != 0`, `0 <= r < |m|`
-- boundedness: all four numerals are constrained by `bound` through `bto-boundedo`
+- bounds are internalized in the relation implementation (no public bound argument)
 
 Division-focused coverage is active in:
 - `/Users/jhemann/Code/mk-balanced-ternary/test/bt_order_div_test.rkt`

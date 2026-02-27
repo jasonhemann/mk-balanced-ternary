@@ -59,6 +59,12 @@ The following relations are required:
     - recursive `x*y'`
     - shift by one trit and add.
 
+- `divo n m q r` (active extension)
+  - Euclidean division relation.
+  - Must satisfy: `n = m*q + r`, `m =/= 0`, `0 <= r < |m|`.
+  - Public surface is 4-ary (no explicit bound argument).
+  - Any bound/ordering helper arguments remain internal to the implementation.
+
 ## 5. Operational and mode contract
 
 Required successful modes for current acceptance:

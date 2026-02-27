@@ -20,7 +20,7 @@ Exit criteria:
 - Any current gaps are tracked as explicit follow-up tasks.
 
 Current focus:
-- Keep hardening symbolic-denotational harness behavior and boundary/domain contracts while Euclidean `divo` remains active under explicit bounds.
+- Keep hardening symbolic-denotational harness behavior and boundary/domain contracts while Euclidean `divo` is active as a public 4-ary relation with internal bound handling.
 
 ## Planned follow-on phases
 
@@ -64,7 +64,7 @@ Immediate worklist (API-shape and relationality cleanup):
   representative open `divo` modes under bounded domains.
 - Keep boundary domain guards explicit and test-backed (via ablation checks)
   while arithmetic surfaces stay as implicit-domain as possible.
-- Remove exposed bound parameter from the public Euclidean division surface (target public arity: `divo n m q r`).
+- Completed: removed exposed bound parameter from the public Euclidean division surface (`divo n m q r`), keeping bounded helper logic internal.
 - Move required bound/canonical constraints inside the arithmetic relation implementation path, so callers are not forced to add extra conjunctions for core arithmetic behavior.
 - Keep deterministic ground canonical behavior while documenting partial-term behavior explicitly (ground uniqueness vs. open-term denotation).
 - After the above refactor, re-run and tighten mode/termination matrices against the public arities.

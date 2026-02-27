@@ -72,7 +72,7 @@
       (bind-int-if m m0)
       (bind-int-if q q0)
       (bind-int-if r r0)
-      (divo n m q r bound)
+      (divo n m q r)
       (== ans (list n m q r)))))
 
 (define (run-with-timeout timeout-ms thunk)

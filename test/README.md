@@ -74,7 +74,7 @@ Bounded-query policy:
 - Divergence assertions and timeout behavior belong in `assurance/`.
 - Randomized `/o` coverage belongs in `assurance/` to avoid non-deterministic timeout warnings in the fast suite.
 - As BT harness coverage expands, move warning-prone or high-latency cases to `assurance/` after measurement.
-- BT `divo` coverage is active in fast regression under explicit bounds.
+- BT `divo` coverage is active in fast regression; `divo` itself has no bound parameter, and exhaustive mode checks still use explicit `bto-boundedo` domains in the test goals.
 
 Partial-term policy:
 - Harness coverage includes whole-number vars and bounded tail vars (for example, `(1 . x)` shapes).

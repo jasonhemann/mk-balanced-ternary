@@ -154,12 +154,11 @@
                       (list (list q r)))
      #:run-observed
      (lambda (limit)
-       (run limit (ans)
+         (run limit (ans)
          (fresh (qq rr)
            (divo (int->bt-term n)
-                          (int->bt-term m)
-                          qq rr
-                          bound4)
+                 (int->bt-term m)
+                 qq rr)
            (== ans (list qq rr)))))
      #:decode-answer decode-bt-tuple
      #:k 1
@@ -174,10 +173,9 @@
        (run limit (nn)
          (bto-boundedo nn bound4)
          (divo nn
-                        (int->bt-term m)
-                        (int->bt-term q)
-                        (int->bt-term r)
-                        bound4)))
+               (int->bt-term m)
+               (int->bt-term q)
+               (int->bt-term r))))
      #:decode-answer decode-bt-tuple
      #:k 1
      #:k2 1
@@ -235,12 +233,11 @@
                       (list (list q r)))
      #:run-observed
      (lambda (limit)
-       (run limit (ans)
+         (run limit (ans)
          (fresh (qq rr)
            (divo (int->bt-term a)
-                          (int->bt-term b)
-                          qq rr
-                          bound4)
+                 (int->bt-term b)
+                 qq rr)
            (== ans (list qq rr)))))
      #:decode-answer decode-bt-tuple
      #:k 1

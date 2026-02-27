@@ -226,6 +226,31 @@
   (len<=o bt bound)
   (canco bt))
 
+;; Copy only list shape (length), discarding payload values.
+(defrel (len-copyo in out)
+  (conde
+    [(== in '()) (== out '())]
+    [(fresh (a d marker outrest)
+       (== `(,a . ,d) in)
+       (== `(,marker . ,outrest) out)
+       (len-copyo d outrest))]))
+
+;; Build an output list whose length is len(x)+len(y).
+(defrel (len-appendo x y out)
+  (conde
+    [(== x '()) (len-copyo y out)]
+    [(fresh (a d marker outrest)
+       (== `(,a . ,d) x)
+       (== `(,marker . ,outrest) out)
+       (len-appendo d y outrest))]))
+
+;; Internal Euclidean-division bound derived from dividend/divisor shape:
+;; length(bound) = 1 + len(n) + len(m).
+(defrel (bound-from-nmo n m bound)
+  (fresh (nm)
+    (len-appendo n m nm)
+    (== `(k . ,nm) bound)))
+
 (defrel (zeroo n)
   (== n '()))
 
@@ -282,7 +307,7 @@
 
 ;; Euclidean division over bounded BT integers:
 ;; n = m*q + r, m != 0, and 0 <= r < |m|.
-(defrel (divo-activeo n m q r bound)
+(defrel (divo-boundedo n m q r bound)
   (bto-boundedo n bound)
   (bto-boundedo m bound)
   (bto-boundedo q bound)
@@ -295,9 +320,7 @@
     (nneg-boundedo r bound)
     (lto-boundedo r am bound)))
 
-(defrel (divo n m q r bound)
-  (divo-activeo n m q r bound))
-
-;; Backward-compatible alias while tests/docs migrate to `divo`.
-(defrel (divo-boundedo n m q r bound)
-  (divo n m q r bound))
+(defrel (divo n m q r)
+  (fresh (bound)
+    (bound-from-nmo n m bound)
+    (divo-boundedo n m q r bound)))

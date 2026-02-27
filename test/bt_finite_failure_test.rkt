@@ -202,7 +202,7 @@
            (bind-int-if rm m)
            (bind-int-if rq qv)
            (bind-int-if rr r)
-           (divo rn rm rq rr bound)
+           (divo rn rm rq rr)
            (== ans (list rn rm rq rr)))))
      #:decode-answer decode-bt-tuple
      #:k 8
