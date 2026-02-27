@@ -28,7 +28,10 @@ raco test assurance
 Core balanced-ternary track:
 - `src/bt_rel.rkt` - primary relation implementation target.
 - `src/bt_oracle.rkt` - host oracle conversions used by tests.
+- `examples/bt_playground.rkt` - REPL playground helpers and sample queries.
+- `examples/bt_absint_rel.rkt` - example big-step relational abstract interpreter over BT intervals.
 - `test/bt_rel_test.rkt` - primary balanced-ternary regression tests.
+- `test/examples/bt_absint_rel_test.rkt` - regression tests for the abstract-interpretation example module.
 - `test/bt_harness_primitive_test.rkt` and `test/bt_harness_ops_test.rkt` - BT harness parity checks against the oracle.
 - `test/bt_mode_bounds_test.rkt` - bounded mode/groundedness matrix checks through `*o`.
 - `test/bt_order_div_test.rkt` - bounded ordering and Euclidean division semantics checks.

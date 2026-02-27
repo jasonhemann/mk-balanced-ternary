@@ -34,6 +34,11 @@ Composition:
   - `bt_div_exhaustive_mode_test.rkt` (bounded Euclidean `divo` representative run* checks; full sweep is in assurance)
   - `bt_div_alias_mode_regression_test.rkt` (finite alias-mode guardrails for `divo`)
   - `support/bt_harness.rkt` (test-only BT harness utilities)
+- Example regression tests:
+  - `examples/bt_absint_rel_test.rkt`
+    - validates the relational abstract-interpretation example module in
+      `examples/bt_absint_rel.rkt`, including surface-syntax parsing and
+      big-step execution behavior
 - Legacy baseline tests:
   - `binary_numbers_test.rkt`
   - `bn_harness_primitive_test.rkt`

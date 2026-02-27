@@ -2,6 +2,10 @@
 
 Balanced-ternary miniKanren integer arithmetic (LSD-first)
 
+File safety policy:
+- Prefer `trash` (or `sudo trash` if permissions require it) for deletions.
+- Do not use `rm -rf` in this repository workflow.
+
 Representation (RELATIONS):
 - A balanced-ternary integer is a list of trits, least-significant first.
 - Trits are symbols: 'T '0 '1 (where 'T means -1).
