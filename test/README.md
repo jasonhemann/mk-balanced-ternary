@@ -36,9 +36,9 @@ Composition:
   - `support/bt_harness.rkt` (test-only BT harness utilities)
 - Example regression tests:
   - `examples/bt_absint_rel_test.rkt`
-    - validates the relational abstract-interpretation example module in
-      `examples/bt_absint_rel.rkt`, including surface-syntax parsing and
-      big-step execution behavior
+    - validates the relational abstract-interpretation example modules in
+      `examples/bt_absint_rel.rkt` and `examples/bt_absint_surface.rkt`,
+      including surface-syntax parsing and big-step execution behavior
 - Legacy baseline tests:
   - `binary_numbers_test.rkt`
   - `bn_harness_primitive_test.rkt`

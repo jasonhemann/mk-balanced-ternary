@@ -30,6 +30,7 @@ Core balanced-ternary track:
 - `src/bt_oracle.rkt` - host oracle conversions used by tests.
 - `examples/bt_playground.rkt` - REPL playground helpers and sample queries.
 - `examples/bt_absint_rel.rkt` - example big-step relational abstract interpreter over BT intervals.
+- `examples/bt_absint_surface.rkt` - surface-syntax parser/lowering for the abstract-interpreter AST.
 - `test/bt_rel_test.rkt` - primary balanced-ternary regression tests.
 - `test/examples/bt_absint_rel_test.rkt` - regression tests for the abstract-interpretation example module.
 - `test/bt_harness_primitive_test.rkt` and `test/bt_harness_ops_test.rkt` - BT harness parity checks against the oracle.

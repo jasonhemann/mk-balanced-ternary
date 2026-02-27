@@ -4,7 +4,8 @@
          minikanren
          racket/engine
          (file "../../src/bt_rel.rkt")
-         (file "../../examples/bt_absint_rel.rkt"))
+         (file "../../examples/bt_absint_rel.rkt")
+         (file "../../examples/bt_absint_surface.rkt"))
 
 (define (mk-bound len)
   (build-list len (lambda (_) 'k)))

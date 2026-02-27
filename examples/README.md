@@ -10,10 +10,11 @@ Current examples:
 - `bt_absint_rel.rkt`
   - Big-step relational abstract interpreter over interval states using BT
     arithmetic (`aevalo`, `execo`, interval operations, and state helpers).
-  - Includes grammar comments and surface-language parser helpers
-    (`surface->expr`, `surface->stmt`) to lower Racket-like syntax into the
-    core relational AST.
   - Uses `minikanren/matche` for clearer branch structure in `aevalo`/`execo`.
+- `bt_absint_surface.rkt`
+  - Surface-language lowering helpers (`surface->expr`, `surface->stmt`) that
+    parse Racket-like syntax into the abstract-interpreter core AST.
+  - Repeats the core/surface grammar near the parser for local readability.
 
 Testing policy:
 - Example behavior is regression-tested from `test/examples/` so examples stay

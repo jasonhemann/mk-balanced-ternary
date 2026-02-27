@@ -2,7 +2,6 @@
 
 (require minikanren
          minikanren/matche
-         (only-in racket/match match)
          (file "../src/bt_rel.rkt"))
 
 (provide (all-defined-out))
@@ -16,7 +15,10 @@
 ;;   ival  ::= (bt . bt)   ; [lo, hi], lo <= hi
 ;;   state ::= (listof ival)
 ;;
-;; Surface syntax accepted by the parser helpers below:
+;; Surface syntax parser/lowering lives in examples/bt_absint_surface.rkt.
+;; A copy of the grammar is kept there for local readability.
+;;
+;; Surface syntax:
 ;;   expr  ::= integer | symbol | (+ expr expr) | (- expr expr)
 ;;           | (- expr) | (* expr expr)
 ;;   stmt  ::= skip
@@ -44,10 +46,10 @@
 (define (build-ival lo hi)
   (cons (build-num lo) (build-num hi)))
 
-;; build-state : (Listof (Pairof Integer Integer)) -> State
+;; build-state : (Dict Integer Integer) -> State
 (define (build-state int-intervals)
-  (for/list ([p int-intervals])
-    (build-ival (car p) (cdr p))))
+  (for/list ([(lo hi) (in-dict int-intervals)])
+    (build-ival lo hi)))
 
 ;; max-abs-from-bound : Bound -> Natural
 (define (max-abs-from-bound bound)
@@ -61,74 +63,6 @@
 ;; make-top-state : Natural Bound -> State
 (define (make-top-state vars bound)
   (build-list vars (lambda (_) (top-interval-from-bound bound))))
-
-;; build-var-env : (Listof Symbol) -> (Hash Symbol Idx)
-(define (build-var-env vars)
-  (for/hash ([x vars] [i (in-naturals)])
-    (values x (build-idx i))))
-
-;; lookup-var-index : (Hash Symbol Idx) Symbol -> Idx
-(define (lookup-var-index env x)
-  (hash-ref env x))
-
-;; surface->expr/env : (Hash Symbol Idx) SurfaceExpr -> Expr
-(define (surface->expr/env env e)
-  (match e
-    [(? integer? n)
-     `(lit ,(build-num n))]
-    [(? symbol? x)
-     `(var ,(lookup-var-index env x))]
-    [`(+ ,e1 ,e2)
-     `(add ,(surface->expr/env env e1)
-           ,(surface->expr/env env e2))]
-    [`(- ,e1 ,e2)
-     `(sub ,(surface->expr/env env e1)
-           ,(surface->expr/env env e2))]
-    [`(- ,e1)
-     `(sub (lit ,(build-num 0))
-           ,(surface->expr/env env e1))]
-    [`(* ,e1 ,e2)
-     `(mul ,(surface->expr/env env e1)
-           ,(surface->expr/env env e2))]))
-
-;; surface-test->expr/env : (Hash Symbol Idx) SurfaceTest -> Expr
-(define (surface-test->expr/env env t)
-  (match t
-    [`(< ,e 0) (surface->expr/env env e)]
-    [`(negative? ,e) (surface->expr/env env e)]
-    [`(neg? ,e) (surface->expr/env env e)]))
-
-;; seqify : (Listof Stmt) -> Stmt
-(define (seqify stmts)
-  (cond
-    [(null? stmts) '(skip)]
-    [(null? (cdr stmts)) (car stmts)]
-    [else `(seq ,(car stmts) ,(seqify (cdr stmts)))]))
-
-;; surface->stmt/env : (Hash Symbol Idx) SurfaceStmt -> Stmt
-(define (surface->stmt/env env s)
-  (match s
-    ['skip '(skip)]
-    [`(set! ,x ,e)
-     `(assign ,(lookup-var-index env x)
-              ,(surface->expr/env env e))]
-    [`(begin . ,ss)
-     (seqify (map (lambda (st) (surface->stmt/env env st)) ss))]
-    [`(if ,tst ,s1 ,s2)
-     `(if-neg ,(surface-test->expr/env env tst)
-              ,(surface->stmt/env env s1)
-              ,(surface->stmt/env env s2))]
-    [`(while ,tst ,body)
-     `(while-neg ,(surface-test->expr/env env tst)
-                 ,(surface->stmt/env env body))]))
-
-;; surface->expr : (Listof Symbol) SurfaceExpr -> Expr
-(define (surface->expr vars e)
-  (surface->expr/env (build-var-env vars) e))
-
-;; surface->stmt : (Listof Symbol) SurfaceStmt -> Stmt
-(define (surface->stmt vars s)
-  (surface->stmt/env (build-var-env vars) s))
 
 ;; Relation helpers.
 (defrel (leqo-boundedo x y bound)
