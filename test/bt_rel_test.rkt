@@ -3,7 +3,8 @@
 (require (except-in rackunit fail)
          minikanren
          racket/list
-         racket/random)
+         racket/random
+         racket/engine)
 
 (require (file "../src/bt_oracle.rkt")
          (file "../src/bt_rel.rkt"))
@@ -24,6 +25,13 @@
 (define (run1 thunk)
   (define sols (thunk))
   (if (null? sols) #f (car sols)))
+
+(define (run-with-timeout timeout-ms thunk)
+  (define e (engine (lambda (enable-stop) (thunk))))
+  (define done? (engine-run timeout-ms e))
+  (define out (and done? (engine-result e)))
+  (engine-kill e)
+  (values done? out))
 
 ;; Bounded canonical predicate for tests only.
 ;; Ensures:
@@ -188,6 +196,18 @@
                 '(()))
   (check-equal? (run 10 (q) (*o '(1) q '(1)))
                 '((1))))
+
+(test-case "*o shared square-root mode terminates for q*q=1"
+  ;; Regression: this mode should return exactly the two integer roots
+  ;; and finitely fail for further answers.
+  (define-values (done? sols)
+    (run-with-timeout
+     1500
+     (lambda ()
+       (run 3 (q)
+         (*o q q (build-num 1))))))
+  (check-true done?)
+  (check-equal? sols '((1) (T))))
 
 ;; ----------------------------
 ;; *o property tests

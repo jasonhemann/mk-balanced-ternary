@@ -38,6 +38,17 @@ Operational expectations (what must work)
   (b) ground/var with explicit bounds provided by tests (x,z ground -> finitely many y)
 - var/var is not a required termination mode unless bounded.
 
+Expected performance-shape differences (INTS vs NATS)
+- Do not treat every slowdown/nontermination as a regression when moving from
+  natural numbers to integers.
+- Some modes that were finite over naturals are infinite over integers because
+  positives and negatives can cancel.
+- Prime example: fixed-sum queries such as (pluso x y (build-num 1)) or
+  (pluso x y (build-num 0)) have infinitely many solutions over integers.
+- The same applies to analogous minuso forms.
+- For these modes, unbounded search may diverge by design; evaluate behavior in
+  bounded runs and enforce soundness/completeness there.
+
 Boundary canonicalization
 - Do NOT enforce canonical form inside pluso/*o unless it is local and non-branching.
 - Tests may constrain solutions with a bounded-canonical predicate (provided in test harness).

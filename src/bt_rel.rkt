@@ -2,6 +2,26 @@
 (require minikanren)
 (provide (all-defined-out))
 
+;; Host helper for REPL/tests, analogous to binary `build-num`.
+;; Produces canonical LSD-first balanced-ternary numerals.
+(define (build-num n)
+  (unless (exact-integer? n)
+    (error 'build-num "expected exact integer, got: ~a" n))
+  (let loop ([k n])
+    (cond
+      [(zero? k) '()]
+      [else
+       (define r (modulo k 3))
+       (define d (case r
+                   [(0) '0]
+                   [(1) '1]
+                   [(2) 'T]))
+       (define next (case r
+                      [(0) (/ k 3)]
+                      [(1) (/ (- k 1) 3)]
+                      [(2) (/ (+ k 1) 3)]))
+       (cons d (loop next))])))
+
 (defrel (trito t)
   (conde
     [(== t 'T)]
@@ -153,6 +173,8 @@
        (nonzeroo z)
        (not-oneo x)
        (not-oneo y)
+       (len<=o x z)
+       (len<=o y z)
        (== `(,b0 . ,yrest) y)
        (mul1o x b0 xb0)
        (*o x yrest xyrest)
