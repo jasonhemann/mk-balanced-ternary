@@ -59,3 +59,10 @@ These directives capture recurring implementation rules for arithmetic relations
    - Finite-failure flow checks are necessary but not sufficient.
    - Add satisfiable flow-completeness checks to ensure each ordering returns
      the exact expected bounded set (not merely some prefix).
+
+13. Document dispatch limits when negative information is unavailable.
+   - Under pure-unification discipline, some unbounded shared-variable alias
+     modes cannot be cleanly partitioned into disjoint operational cases.
+   - Classify those modes explicitly as expected divergence (for example
+     `(*o q q q)` after the first two answers), and keep bounded checks as the
+     regression contract.

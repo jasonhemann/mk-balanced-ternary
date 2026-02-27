@@ -12,6 +12,8 @@ Run with:
 - `raco test assurance/bt_additive_flow_exhaustive_assurance_test.rkt`
 - `raco test assurance/bt_mul_flow_exhaustive_assurance_test.rkt`
 - `raco test assurance/bt_mul_mode_profile_assurance_test.rkt`
+- `raco test assurance/bt_div_exhaustive_mode_assurance_test.rkt`
+- `raco test assurance/bt_alias_operational_assurance_test.rkt`
 - `raco test assurance/bt_symbolic_denotation_assurance_test.rkt`
 
 Purpose:
@@ -50,6 +52,13 @@ Purpose:
   - per-query completion budgets for representative `*o` modes (`ggv`, `vgg`, `gvg`, `vvg`) at len<=3,
   - exact bounded answer-set comparison against host arithmetic,
   - designed to catch operational regressions early without involving `/o`.
+- Dedicated BT division exhaustive checks:
+  - full run* mode-mask sweep over representative signed seeds at len<=2,
+  - exact denotation equality with host Euclidean semantics,
+  - explicit non-overlap checks (raw and decoded answers).
+- Dedicated BT alias operational classification checks:
+  - representative alias goals for `pluso`, `minuso`, `*o`, and `divo`,
+  - classified as finite success, finite failure, or expected divergence.
 - Dedicated BT symbolic denotation assurance checks:
   - open-mode symbolic partition checks for `pluso`, `minuso`, and `*o`,
   - exact coverage + non-overlap over host domains at len<=4,
@@ -57,6 +66,7 @@ Purpose:
 
 Policy:
 - Engine usage is intentional for divergence testing.
+- Expected-divergence tests are deliberate contract checks, not failures.
 - Tests here are for assurance and operational risk detection, not fast edit-loop feedback.
 
 Normative semantics and acceptance framing are defined in `docs/SPEC.md`.

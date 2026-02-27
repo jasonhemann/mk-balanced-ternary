@@ -83,6 +83,34 @@ Not required in current acceptance:
 - global completeness for arbitrary conjunction orderings.
 - unbounded ordering relations.
 
+### 5.1 Mode classification by relation family
+
+The current phase uses three operational classes:
+
+- **Guaranteed finite**
+  - ground arithmetic (`ggg`, `gggg`) for `pluso`, `minuso`, `*o`, `divo`.
+  - bounded inverse templates used by tests (for example with explicit
+    `bto-boundedo` domains).
+  - bounded denotation checks where expected host sets are finite.
+- **Expected possibly divergent**
+  - unbounded shared-variable alias goals that require negative-information
+    dispatch not available in pure unification.
+  - canonical example: `(*o q q q)` beyond the first two answers.
+  - analogous additive aliases such as `(pluso q q q)` and `(minuso q q q)`
+    in unbounded open search.
+- **Out of scope**
+  - claims of finite refutation for arbitrary conjunctions with shared variables.
+
+### 5.2 Non-overlap requirement in bounded enumerations
+
+For bounded exhaustive checks (fast or assurance), answer streams must satisfy:
+
+- no duplicate raw answer terms, and
+- no duplicate decoded host tuples.
+
+This non-overlap requirement applies to acceptance tests, even when analogous
+unbounded query shapes are classified as possibly divergent.
+
 ## 6. Boundary canonicalization policy
 
 Canonical form should be enforced at explicit boundaries, not deeply or implicitly in recursive arithmetic branches.

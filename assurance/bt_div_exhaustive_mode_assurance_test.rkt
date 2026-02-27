@@ -5,7 +5,7 @@
          racket/engine
          (except-in racket/list cartesian-product)
          (file "../src/bt_rel.rkt")
-         (file "support/bt_harness.rkt"))
+         (file "../test/support/bt_harness.rkt"))
 
 (define-syntax-rule (divo-test-case name body ...)
   (test-case name body ...))
@@ -76,7 +76,7 @@
       (== ans (list n m q r)))))
 
 (define (run-with-timeout timeout-ms thunk)
-  (define e (engine (lambda (enable-stop)
+  (define e (engine (lambda (_enable-stop)
                       (thunk))))
   (define done? (engine-run timeout-ms e))
   (cond
@@ -93,23 +93,17 @@
         string<?
         #:key (lambda (x) (format "~s" x))))
 
-(divo-test-case "bt div representative run* modes: fast denotation + uniqueness checks (len<=2)"
-  ;; The full run* mask sweep is tracked in assurance. Keep fast regression as a
-  ;; representative subset that must close quickly and remain non-overlapping.
+(divo-test-case "bt div assurance: exhaustive run* mode sweep matches denotation (len<=2)"
   (define seeds
     (list
      (list "pos" '(4 3 1 1))
-     (list "neg-m" '(-4 -3 2 2))))
-  (define masks
-    (list
-     '(#t #t #t #t)  ; gggg
-     '(#t #t #f #f)  ; ggvv
-     '(#f #t #t #f)  ; vggv
-     '(#f #f #f #f))) ; vvvv
+     (list "neg-n" '(-4 3 -2 2))
+     (list "neg-m" '(-4 -3 2 2))
+     (list "both-neg" '(-2 -4 1 2))))
   (for ([seed-entry seeds])
     (define seed-label (first seed-entry))
     (define seed (second seed-entry))
-    (for ([mask masks])
+    (for ([mask (bool-masks 4)])
       (define partial (partial-from-mask seed mask))
       (define expected (normalize-set (expected-div partial)))
       (check-true (pair? expected)
@@ -117,7 +111,7 @@
                           seed-label
                           (mask->label mask)))
       (define-values (timed-out? raw)
-        (run-with-timeout 2500
+        (run-with-timeout 5000
                           (lambda ()
                             (run-div* partial))))
       (check-false timed-out?

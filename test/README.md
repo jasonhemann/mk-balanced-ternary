@@ -31,7 +31,8 @@ Composition:
   - `bt_totality_test.rkt` (bounded completeness/totality checks, including all factor pairs for 12)
   - `bt_order_div_test.rkt` (bounded ordering checks + deterministic Euclidean `divo` checks)
   - `bt_div_mode_matrix_test.rkt` (bounded Euclidean `divo` representative mode matrix)
-  - `bt_div_exhaustive_mode_test.rkt` (bounded Euclidean `divo` exhaustive mode checks)
+  - `bt_div_exhaustive_mode_test.rkt` (bounded Euclidean `divo` representative run* checks; full sweep is in assurance)
+  - `bt_div_alias_mode_regression_test.rkt` (finite alias-mode guardrails for `divo`)
   - `support/bt_harness.rkt` (test-only BT harness utilities)
 - Legacy baseline tests:
   - `binary_numbers_test.rkt`
@@ -48,6 +49,7 @@ Purpose:
 - BT harness checks that compare `bt_rel` with `bt_oracle` using the same classification model as BN.
 - Bounded BT mode-matrix checks ensure finite all-groundedness variants through multiplication under explicit digit-length bounds.
 - The heaviest open-mode totality check (`*o` vvv) is intentionally in `assurance/`.
+- Expected-divergence assertions are intentionally in `assurance/`, not fast regression.
 
 Binary harness defaults:
 - Prefix limits: `k=5`, `k2=10`.
@@ -74,7 +76,13 @@ Bounded-query policy:
 - Divergence assertions and timeout behavior belong in `assurance/`.
 - Randomized `/o` coverage belongs in `assurance/` to avoid non-deterministic timeout warnings in the fast suite.
 - As BT harness coverage expands, move warning-prone or high-latency cases to `assurance/` after measurement.
-- BT `divo` coverage is active in fast regression; `divo` itself has no bound parameter, and exhaustive mode checks still use explicit `bto-boundedo` domains in the test goals.
+- BT `divo` coverage is active in fast regression; `divo` itself has no bound parameter, and representative run* checks still use explicit `bto-boundedo` domains in the test goals.
+
+Fast-suite operational contract:
+- Correctness checks: bounded semantic agreement with host arithmetic.
+- Bounded termination checks: finite bounded queries must close within configured budgets.
+- Non-overlap checks: bounded enumerations must have no duplicate raw or decoded answers.
+- Expected-divergence checks are tracked separately in `assurance/`.
 
 Partial-term policy:
 - Harness coverage includes whole-number vars and bounded tail vars (for example, `(1 . x)` shapes).

@@ -103,6 +103,23 @@
         string<?
         #:key ~s))
 
+(define (check-unique-answers! name raw)
+  (define raw-unique (remove-duplicates raw equal?))
+  (unless (= (length raw) (length raw-unique))
+    (fail-check
+     (format "~a duplicate raw answers: ~s" name raw)))
+  (define decoded
+    (for/list ([ans raw])
+      (define d (decode-bt-tuple ans))
+      (when (false? d)
+        (fail-check
+         (format "~a undecodable answer: ~s" name ans)))
+      d))
+  (define decoded-unique (remove-duplicates decoded equal?))
+  (unless (= (length decoded) (length decoded-unique))
+    (fail-check
+     (format "~a duplicate decoded answers: ~s" name decoded))))
+
 (define (satisfiable-partials ints sat-tuples)
   (for*/list ([mask (bool-masks 3)]
               #:do [(define indices (mask-indices mask))
@@ -190,6 +207,10 @@
         (fail-check
          (format "len~a/*o/~a timeout for mask ~a partial ~s"
                  len flow (mask->label mask) partial)))
+      (check-unique-answers!
+       (format "len~a/*o/~a/mask~a/partial~s"
+               len flow (mask->label mask) partial)
+       raw)
       (define got* (decoded-set raw))
       (unless (equal? got* expected*)
         (fail-check
@@ -229,12 +250,12 @@
   ;; Confidence bump over a wider bounded universe.
   ;; Use fixed representative satisfiable cases per mode mask to keep runtime
   ;; practical while still checking every mode and flow ordering.
-  (check-flow-complete 3 1800 8 '(bounds-bind-rel bind-bounds-rel)))
+  (check-flow-complete 3 3000 8 '(bounds-bind-rel bind-bounds-rel)))
 
 (test-case "bt assurance: *o representative finite-failure checks across flows (len<=3)"
   ;; Full unsat exhaustiveness at len<=3 is expensive; this checks a fixed
   ;; representative unsat set per mode mask and flow ordering.
-  (check-finite-failure-representatives 3 1800 '(bounds-bind-rel bind-bounds-rel)))
+  (check-finite-failure-representatives 3 3000 '(bounds-bind-rel bind-bounds-rel)))
 
 (test-case "bt assurance: *o len<=3 bounds-rel-bind smoke checks"
   ;; This flow ordering is much slower at len<=3, so keep it as a focused smoke

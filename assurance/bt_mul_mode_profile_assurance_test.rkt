@@ -37,6 +37,18 @@
       (fail-check (format "undecodable answer in mode profile: ~s" ans)))
     d))
 
+(define (check-no-duplicates mode label raw decoded)
+  (define raw-unique (remove-duplicates raw equal?))
+  (unless (= (length raw) (length raw-unique))
+    (fail-check
+     (format "~a duplicate raw answers for ~a; got ~s"
+             mode label raw)))
+  (define dec-unique (remove-duplicates decoded equal?))
+  (unless (= (length decoded) (length dec-unique))
+    (fail-check
+     (format "~a duplicate decoded answers for ~a; got ~s"
+             mode label decoded))))
+
 (define (check-case mode label expected run-thunk)
   (define timeout-ms (hash-ref mode-timeout-ms mode))
   (define-values (done? raw)
@@ -45,7 +57,9 @@
     (fail-check
      (format "~a timeout (>~ams) for case ~a"
              mode timeout-ms label)))
-  (define got* (normalize (decode-all raw)))
+  (define decoded (decode-all raw))
+  (check-no-duplicates mode label raw decoded)
+  (define got* (normalize decoded))
   (define exp* (normalize expected))
   (unless (equal? got* exp*)
     (fail-check
@@ -58,6 +72,8 @@
   ;; - vgg: y,z ground; solve x
   ;; - gvg: x,z ground; solve y
   ;; - vvg: z ground; solve x,y
+  ;; This profile intentionally excludes unbounded shared-variable alias goals
+  ;; such as (*o q q q); those are tracked separately as expected divergence.
   (for* ([x ints]
          [y ints])
     (define p (* x y))
