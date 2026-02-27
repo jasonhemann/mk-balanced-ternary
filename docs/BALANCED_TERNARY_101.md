@@ -93,14 +93,20 @@ The BT harness compares answers denotationally over bounded expected sets:
 
 So partial answers are treated as first-class semantics (mK style), not rejected just because they are non-ground.
 
-## 5) Division status (currently parked)
+## 5) Division status (active)
 
-Euclidean division remains the intended design (`n = m*q + r`, `m != 0`, `0 <= r < |m|`), but the active development focus is currently below division.
+Euclidean division is active via bounded `divo`:
 
-Implementation/test status:
-- `divo` calls are currently parked behind `ENABLE-BT-DIVO? = #f`.
-- Division-focused tests are parked behind `ENABLE-BT-DIVO-TESTS? = #f`.
-- Ordering/absolute-value bounded checks remain active.
+- relation shape: `(divo n m q r bound)`
+- semantics: `n = m*q + r`, `m != 0`, `0 <= r < |m|`
+- boundedness: all four numerals are constrained by `bound` through `bto-boundedo`
+
+Division-focused coverage is active in:
+- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_order_div_test.rkt`
+- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_div_mode_matrix_test.rkt`
+- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_div_exhaustive_mode_test.rkt`
+- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_signed_valence_test.rkt`
+- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_finite_failure_test.rkt`
 
 ## 6) Practical query templates
 

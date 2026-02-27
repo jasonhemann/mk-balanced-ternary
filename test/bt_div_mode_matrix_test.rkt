@@ -5,11 +5,8 @@
          (file "../src/bt_rel.rkt")
          (file "support/bt_harness.rkt"))
 
-(define ENABLE-BT-DIVO-TESTS? #f)
-
 (define-syntax-rule (divo-test-case name body ...)
-  (when ENABLE-BT-DIVO-TESTS?
-    (test-case name body ...)))
+  (test-case name body ...))
 
 (define (make-bound len)
   (build-list len (lambda (i) 'k)))

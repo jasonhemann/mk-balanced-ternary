@@ -273,13 +273,8 @@
     (nneg-boundedo r bound)
     (lto-boundedo r am bound)))
 
-;; Temporarily parked while we focus on boundary/domain relation behavior.
-(define ENABLE-BT-DIVO? #f)
-
 (defrel (divo n m q r bound)
-  (if ENABLE-BT-DIVO?
-      (divo-activeo n m q r bound)
-      (== #t #f)))
+  (divo-activeo n m q r bound))
 
 ;; Backward-compatible alias while tests/docs migrate to `divo`.
 (defrel (divo-boundedo n m q r bound)

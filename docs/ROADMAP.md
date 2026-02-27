@@ -19,9 +19,8 @@ Exit criteria:
 - Slow assurance suite (`raco test assurance`) passes.
 - Any current gaps are tracked as explicit follow-up tasks.
 
-Current pause:
-- BT division is temporarily parked while we harden symbolic-denotational
-  harness behavior and boundary/domain contracts.
+Current focus:
+- Keep hardening symbolic-denotational harness behavior and boundary/domain contracts while Euclidean `divo` remains active under explicit bounds.
 
 ## Planned follow-on phases
 
@@ -53,19 +52,18 @@ Progress:
 - Implemented: bounded finite-failure matrix (`test/bt_finite_failure_test.rkt`) that enumerates grounding modes with unsatisfiable instances and asserts finite failure.
 - Implemented: bounded totality/completeness checks for multiplication (`test/bt_totality_test.rkt`), including exhaustive factorization of 12 and mode-matrix coverage.
 - Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
-- Parked: bounded Euclidean `divo` mode matrix and exhaustive bounded `run*` checks (`test/bt_div_mode_matrix_test.rkt`, `test/bt_div_exhaustive_mode_test.rkt`).
-- Parked: division portions of signed valence and finite-failure matrices.
+- Implemented: bounded Euclidean `divo` mode matrix and exhaustive bounded `run*` checks (`test/bt_div_mode_matrix_test.rkt`, `test/bt_div_exhaustive_mode_test.rkt`).
+- Implemented: division portions of signed valence and finite-failure matrices.
 - Implemented: tightened carry-construction pruning in `pluso` (`sum-trim0o`) to remove duplicate proof paths that propagated into division answers.
-- Parked: explicit deterministic-ground regression checks for Euclidean division.
+- Implemented: explicit deterministic-ground regression checks for Euclidean division.
 - Implemented: symbolic denotational harness handling for partially instantiated answers (mK-style) and explicit boundary ablation tests.
-- Next: complete symbolic-answer partition/non-overlap checks for key open modes before re-enabling division.
+- Implemented: symbolic-answer partition/non-overlap checks for key open modes (`pluso`, `minuso`, `*o`) in both fast and assurance suites.
 
 Immediate worklist (API-shape and relationality cleanup):
-- Harden symbolic-answer partition checks (exact denotation + non-overlap) for
-  `pluso`/`*o` open identity modes.
+- Extend symbolic-answer partition checks (exact denotation + non-overlap) to
+  representative open `divo` modes under bounded domains.
 - Keep boundary domain guards explicit and test-backed (via ablation checks)
   while arithmetic surfaces stay as implicit-domain as possible.
-- Re-enable `divo` only after symbolic harness invariants remain stable.
 - Remove exposed bound parameter from the public Euclidean division surface (target public arity: `divo n m q r`).
 - Move required bound/canonical constraints inside the arithmetic relation implementation path, so callers are not forced to add extra conjunctions for core arithmetic behavior.
 - Keep deterministic ground canonical behavior while documenting partial-term behavior explicitly (ground uniqueness vs. open-term denotation).

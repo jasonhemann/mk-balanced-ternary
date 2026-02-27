@@ -26,12 +26,12 @@ Composition:
   - `bt_harness_primitive_test.rkt`
   - `bt_harness_ops_test.rkt`
   - `bt_mode_bounds_test.rkt` (bounded mode/groundedness matrix through `*o`)
-  - `bt_signed_valence_test.rkt` (explicit negative/positive crossing cases for `pluso`, `minuso`, `*o`; div cases parked)
-  - `bt_finite_failure_test.rkt` (bounded finite-failure matrix for `pluso`, `minuso`, `*o`; div cases parked)
+  - `bt_signed_valence_test.rkt` (explicit negative/positive crossing cases for `pluso`, `minuso`, `*o`, and Euclidean `divo`)
+  - `bt_finite_failure_test.rkt` (bounded finite-failure matrix for `pluso`, `minuso`, `*o`, and `divo`)
   - `bt_totality_test.rkt` (bounded completeness/totality checks, including all factor pairs for 12)
-  - `bt_order_div_test.rkt` (bounded ordering checks; div cases parked)
-  - `bt_div_mode_matrix_test.rkt` (div mode matrix currently parked)
-  - `bt_div_exhaustive_mode_test.rkt` (div exhaustive mode checks currently parked)
+  - `bt_order_div_test.rkt` (bounded ordering checks + deterministic Euclidean `divo` checks)
+  - `bt_div_mode_matrix_test.rkt` (bounded Euclidean `divo` representative mode matrix)
+  - `bt_div_exhaustive_mode_test.rkt` (bounded Euclidean `divo` exhaustive mode checks)
   - `support/bt_harness.rkt` (test-only BT harness utilities)
 - Legacy baseline tests:
   - `binary_numbers_test.rkt`
@@ -74,7 +74,7 @@ Bounded-query policy:
 - Divergence assertions and timeout behavior belong in `assurance/`.
 - Randomized `/o` coverage belongs in `assurance/` to avoid non-deterministic timeout warnings in the fast suite.
 - As BT harness coverage expands, move warning-prone or high-latency cases to `assurance/` after measurement.
-- BT `divo` work is currently parked (`ENABLE-BT-DIVO-TESTS? = #f` in div-focused files).
+- BT `divo` coverage is active in fast regression under explicit bounds.
 
 Partial-term policy:
 - Harness coverage includes whole-number vars and bounded tail vars (for example, `(1 . x)` shapes).
