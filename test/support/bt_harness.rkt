@@ -169,6 +169,7 @@
 (define (split-raw-answer raw)
   (if (and (pair? raw)
            (pair? (cdr raw))
+           (list? (cdr raw))
            (andmap known-constraint? (cdr raw)))
       (values (car raw) (cdr raw))
       (values raw '())))

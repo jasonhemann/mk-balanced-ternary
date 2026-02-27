@@ -12,7 +12,7 @@ Composition:
   - `bt_boundary_relations_test.rkt`
     - boundary/domain relation checks for `canco`, `canco-shapeo`, `digit-stepo`, and explicit trito-ablation demonstrations
   - `bt_symbolic_denotation_test.rkt`
-    - bounded denotational checks that symbolic open-mode answers partition expected host sets (`pluso`, `*o` identity modes)
+    - bounded denotational checks that symbolic open-mode answers partition expected host sets (`pluso`/`minuso` identity surfaces and representative `*o` identity/zero surfaces)
   - `bt_bn_parity_test.rkt`
     - side-by-side parity checks for counterintuitive open-mode symbolic answers, confirming BT behavior matches the legacy binary suite
   - `bt_bn_prl_add_sub_parity_test.rkt`

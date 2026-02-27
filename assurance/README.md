@@ -12,6 +12,7 @@ Run with:
 - `raco test assurance/bt_additive_flow_exhaustive_assurance_test.rkt`
 - `raco test assurance/bt_mul_flow_exhaustive_assurance_test.rkt`
 - `raco test assurance/bt_mul_mode_profile_assurance_test.rkt`
+- `raco test assurance/bt_symbolic_denotation_assurance_test.rkt`
 
 Purpose:
 - Heavy randomized property checks over wider ranges.
@@ -49,6 +50,10 @@ Purpose:
   - per-query completion budgets for representative `*o` modes (`ggv`, `vgg`, `gvg`, `vvg`) at len<=3,
   - exact bounded answer-set comparison against host arithmetic,
   - designed to catch operational regressions early without involving `/o`.
+- Dedicated BT symbolic denotation assurance checks:
+  - open-mode symbolic partition checks for `pluso`, `minuso`, and `*o`,
+  - exact coverage + non-overlap over host domains at len<=4,
+  - explicit per-case engine timeout budgets.
 
 Policy:
 - Engine usage is intentional for divergence testing.
