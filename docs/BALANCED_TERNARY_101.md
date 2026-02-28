@@ -24,7 +24,7 @@ Examples:
 
 ## 2) Why bounds are list lengths (not host ints)
 
-The core bounded predicate is `bto-boundedo` in `/Users/jhemann/Code/mk-balanced-ternary/src/bt_rel.rkt`.
+The core bounded predicate is `bto-boundedo` in `src/bt_rel.rkt`.
 
 - A bound is a ground list token, e.g. `(k k k)`.
 - If bound length is `L`, then allowed values are exactly:
@@ -52,7 +52,7 @@ returns raw BT terms:
 To decode to integers in tests/harness:
 
 ```racket
-(require (file "/Users/jhemann/Code/mk-balanced-ternary/test/support/bt_harness.rkt"))
+(require (file "test/support/bt_harness.rkt"))
 (remove-duplicates (map decode-bt-tuple raw) equal?)
 ```
 
@@ -102,11 +102,11 @@ Euclidean division is active via `divo`:
 - bounds are internalized in the relation implementation (no public bound argument)
 
 Division-focused coverage is active in:
-- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_order_div_test.rkt`
-- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_div_mode_matrix_test.rkt`
-- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_div_exhaustive_mode_test.rkt`
-- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_signed_valence_test.rkt`
-- `/Users/jhemann/Code/mk-balanced-ternary/test/bt_finite_failure_test.rkt`
+- `test/bt_order_div_test.rkt`
+- `test/bt_div_mode_matrix_test.rkt`
+- `test/bt_div_exhaustive_mode_test.rkt`
+- `test/bt_signed_valence_test.rkt`
+- `test/bt_finite_failure_test.rkt`
 
 ## 6) Practical query templates
 

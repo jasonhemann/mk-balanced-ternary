@@ -11,12 +11,12 @@ Composition:
     - includes canonical-surface regression checks for `pluso`/`minuso` zero-alias behavior
   - `bt_boundary_relations_test.rkt`
     - boundary/domain relation checks for `canco`, `canco-shapeo`, `digit-stepo`, and explicit trito-ablation demonstrations
+  - `bt_symbolic_partition_test.rkt`
+    - symbolic partition checks for representative open-mode answers (`pluso`/`*o` identity and right-identity orientation)
   - `bt_symbolic_denotation_test.rkt`
     - bounded denotational checks that symbolic open-mode answers partition expected host sets (`pluso`/`minuso` identity surfaces and representative `*o` identity/zero surfaces)
-  - `bt_bn_parity_test.rkt`
-    - side-by-side parity checks for counterintuitive open-mode symbolic answers, confirming BT behavior matches the legacy binary suite
-  - `bt_bn_prl_add_sub_parity_test.rkt`
-    - side-by-side parity checks for arith.prl/paper add/sub showcase cases (including finite-failure vs integer-extension differences)
+  - `bt_integer_extension_examples_test.rkt`
+    - BT-only examples of integer-extension behavior that used to be documented via binary/prolog parity comparisons
   - `bt_additive_laws_test.rkt`
     - commutativity/associativity/cancellation/inverse checks for additive relations (exhaustive bounded + randomized stress)
   - `bt_mul_laws_test.rkt`
@@ -41,35 +41,16 @@ Composition:
   - `examples/bt_absint_surface_test.rkt`
     - validates surface-language lowering/parsing behavior from
       `examples/bt_absint_surface.rkt`
-- Legacy baseline tests:
-  - `binary_numbers_test.rkt`
-  - `bn_harness_primitive_test.rkt`
-  - `bn_harness_ops_test.rkt`
-  - `support/bn_harness.rkt` (test-only harness utilities)
 
 Purpose:
 - Quick correctness checks for core behavior.
 - Bounded inverse-mode checks for finite search in regression runs.
 - Moderate randomized coverage for arithmetic properties.
-- Binary harness checks that compare host naturals against miniKanren binary relations.
 - Keep the default loop warning-light; slower completeness/divergence checks are in `assurance/`.
-- BT harness checks that compare `bt_rel` with `bt_oracle` using the same classification model as BN.
+- BT harness checks that compare `bt_rel` with `bt_oracle`.
 - Bounded BT mode-matrix checks ensure finite all-groundedness variants through multiplication under explicit digit-length bounds.
 - The heaviest open-mode totality check (`*o` vvv) is intentionally in `assurance/`.
 - Expected-divergence assertions are intentionally in `assurance/`, not fast regression.
-
-Binary harness defaults:
-- Prefix limits: `k=5`, `k2=10`.
-- Timeout budget per query: `120ms`.
-- Deterministic exhaustive ranges: naturals in `0..31`.
-- Randomized sweeps: naturals in `0..300`.
-- Fast-suite call sites may override defaults (for example `k=1`, `k2=1`, `timeout=1000ms`) to keep runtime predictable.
-
-Binary harness classification policy:
-- Spurious observed answers fail immediately.
-- Missing expected answers by `k2` emit warnings.
-- Timeouts on bounded finite checks emit warnings.
-- Warnings are printed per-case to keep regressions informative without failing on incompleteness.
 
 BT harness note:
 - Partially instantiated BT answers are expected in open modes.

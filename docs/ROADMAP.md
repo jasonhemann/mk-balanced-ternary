@@ -24,15 +24,9 @@ Current focus:
 
 ## Planned follow-on phases
 
-### M1.25 Binary harness hardening (immediate pre-BT step)
-- Build a binary-only validation harness between host Racket naturals and miniKanren backward binary relations.
-- Include deterministic bounded checks, randomized checks, partial-term bounded cases, and explicit divergence classification.
-- Treat harness behavior as a confidence gate before adding balanced-ternary comparison layers.
-
-Current status:
-- Implemented: `test/support/bn_harness.rkt` with deterministic and randomized checks, classification, and warning logging.
-- Implemented: fast/slow split for harness tests (`test/` vs `assurance/`), including seeded slow `/o` assurance and divergence checks.
-- Completed: removed harness-only self-check fixtures from regression/assurance suites.
+### M1.25 Harness hardening (completed)
+- Hardened BT harness behavior with deterministic bounded checks, randomized checks, and explicit operational classification.
+- Completed fast/assurance split for harness-based checks and moved warning-prone/slow cases into assurance.
 
 ### M1.5 Operational profile hardening
 - Expand mode behavior notes per relation.
@@ -40,10 +34,9 @@ Current status:
 - Add targeted regression cases for known divergence shapes.
 
 Suggested immediate next step:
-- Start balanced-ternary harness parity:
-  - add BT-side deterministic/randomized ground checks against `bt_oracle.rkt`,
-  - add bounded inverse-mode checks mirroring the binary harness structure,
-  - split BT fast vs assurance checks from the start to avoid rework.
+- Continue tightening BT-only mode and denotation checks:
+  - extend bounded symbolic partition checks for representative `divo` open modes,
+  - keep mode-profile budgets current as arithmetic relations evolve.
 
 Progress:
 - Started: BT harness skeleton added with fast (`test/bt_harness_*.rkt`) and assurance (`assurance/bt_harness_assurance_test.rkt`) tracks.

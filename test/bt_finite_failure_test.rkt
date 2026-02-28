@@ -88,9 +88,9 @@
     (list n m q r)))
 
 (test-case "bt finite failure matrix: pluso modes with failure witnesses"
-  ;; Mutatis mutandis from arith.prl should_fail classes: for every grounding
-  ;; mode that admits unsatisfiable instances under the finite bound, we assert
-  ;; finite failure with no timeout/missing warnings.
+  ;; For every grounding mode that admits unsatisfiable instances under the
+  ;; finite bound, assert finite failure with no timeout/missing warnings.
+  ;;
   (define cases (find-mode-witnesses 3 plus-sat ints))
   (check-true (pair? cases))
   (for ([entry cases])

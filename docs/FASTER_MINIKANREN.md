@@ -23,7 +23,8 @@ This project assumes `faster-minikanren` is installed and uses:
   - `add3o` for one-digit full-adder relations.
   - `add-carryo` for ripple-carry helpers.
   - `pluso`, `minuso`, `*o` for core arithmetic.
-- Keep compatibility aliases only when needed (`full-addero`, `addero`, `gen-addero`, `>1o`, `odd-*o`, `bound-*o` in `binary-numbers.rkt`).
+- Keep compatibility aliases only when they are required by existing BT call
+  sites or test harnesses.
 
 ## Practical Effect
 - Relations remain portable to hosted/faster-style miniKanren backends.

@@ -4,7 +4,6 @@ This directory contains deeper confidence checks that are slower than the defaul
 
 Run with:
 - `raco test assurance/slow_assurance_test.rkt`
-- `raco test assurance/bn_harness_divergence_test.rkt`
 - `raco test assurance/bt_harness_assurance_test.rkt`
 - `raco test assurance/bt_totality_assurance_test.rkt`
 - `raco test assurance/bt_finite_failure_exhaustive_assurance_test.rkt`
@@ -20,11 +19,6 @@ Purpose:
 - Heavy randomized property checks over wider ranges.
 - Engine-based timeout assertions for known divergent query shapes.
 - Sanity checks that finite queries still return within bounded time.
-- Dedicated binary-harness assurance checks:
-  - slower multi-answer and randomized `/o` checks,
-  - explicit run* completion case (`/o` on `199/85`),
-  - divergence timeout checks.
-- The randomized `/o` sweep is seeded and range-limited to keep runtime stable while still exercising inverse division behavior.
 - Dedicated BT-harness assurance checks:
   - seeded heavier randomized `pluso` and `*o` checks against `bt_oracle`.
 - Dedicated BT totality assurance checks:

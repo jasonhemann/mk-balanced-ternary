@@ -12,9 +12,6 @@ Primary balanced-ternary modules:
 - `bt_oracle.rkt`
   - Host-level conversion oracle (`bt->int`, `int->bt`) used by tests.
   - Not part of relational arithmetic semantics.
-Legacy baseline module:
-- `binary-numbers.rkt`
-  - Binary arithmetic relations maintained as regression and comparison baseline.
 
 Boundary rules:
 - Relational arithmetic semantics are defined by `docs/SPEC.md`.

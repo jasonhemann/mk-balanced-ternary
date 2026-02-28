@@ -1,15 +1,22 @@
 # mk-balanced-ternary
 
-This project builds pure miniKanren arithmetic for balanced-ternary integers in LSD-first form, with executable relation definitions, an oracle for test comparison, and test suites that enforce both semantic correctness and bounded operational behavior.
+Balanced-ternary integer arithmetic relations for miniKanren, with bounded mode
+testing and assurance suites. The active track is pure relational arithmetic
+over integers (`'T '0 '1`, LSD-first), plus example programs that use it.
 
-## Current phase and primary deliverables
+## Status
 
-Current delivery target is balanced-ternary M0 and M1:
-- M0 oracle in host code: `bt->int`, `int->bt` for tests.
-- M1 core relations in miniKanren: `trito`, `add3o`, `nego`, `pluso`, `minuso`, `mul1o`, `*o`.
-- Verification focus: ground/ground and bounded inverse modes exercised by tests.
+Implemented and test-backed:
+- Core BT arithmetic: `trito`, `add3o`, `nego`, `pluso`, `minuso`, `mul1o`, `*o`.
+- Euclidean division surface: `divo n m q r`.
+- Oracle conversions for tests: `bt->int`, `int->bt`.
+- Example relational abstract interpreter over interval states.
 
 ## Quickstart
+
+Prerequisites:
+- Racket
+- `faster-minikanren` package installed for `#lang racket` + `minikanren`
 
 Run fast regression tests:
 
@@ -17,51 +24,41 @@ Run fast regression tests:
 raco test test
 ```
 
-Run slow assurance tests:
+Run slower assurance tests:
 
 ```sh
 raco test assurance
 ```
 
-## Repository map
+Try the playground in DrRacket / REPL:
 
-Core balanced-ternary track:
-- `src/bt_rel.rkt` - primary relation implementation target.
-- `src/bt_oracle.rkt` - host oracle conversions used by tests.
-- `examples/bt_playground.rkt` - REPL playground helpers and sample queries.
-- `examples/bt_absint_rel.rkt` - example big-step relational abstract interpreter over BT intervals.
-- `examples/bt_absint_surface.rkt` - surface-syntax parser/lowering for the abstract-interpreter AST.
-- `test/bt_rel_test.rkt` - primary balanced-ternary regression tests.
-- `test/examples/bt_absint_rel_test.rkt` - regression tests for the abstract-interpretation example module.
-- `test/bt_harness_primitive_test.rkt` and `test/bt_harness_ops_test.rkt` - BT harness parity checks against the oracle.
-- `test/bt_mode_bounds_test.rkt` - bounded mode/groundedness matrix checks through `*o`.
-- `test/bt_order_div_test.rkt` - bounded ordering and Euclidean division semantics checks.
-- `test/bt_div_exhaustive_mode_test.rkt` - exhaustive bounded `run*` mode checks for Euclidean `divo` against host denotations.
-- `test/bt_div_mode_matrix_test.rkt`, `test/bt_finite_failure_test.rkt`, `test/bt_signed_valence_test.rkt` - Euclidean `divo` mode, failure, and signed-case coverage.
+```racket
+(require (file "examples/bt_playground.rkt"))
+```
 
-Legacy baseline track:
-- `src/binary-numbers.rkt` - binary miniKanren arithmetic baseline.
-- `test/binary_numbers_test.rkt` - binary baseline regression tests.
+## Project map
 
-Reference artifacts:
-- `artifacts/arith.prl` - copied Prolog reference implementation.
-- `artifacts/Pure_Declarative_and_Constructive_Arithmetic_Relat.pdf` - source paper referenced during design.
+- `src/` - core relation implementation and host oracle modules.
+- `test/` - fast regression suites (BT arithmetic + example tests).
+- `assurance/` - slower exhaustive/randomized/operational checks.
+- `examples/` - runnable usage examples (playground + abstract interpreter).
+- `docs/` - specification, directives, planning docs, and related-work links.
 
-Assurance:
-- `assurance/slow_assurance_test.rkt` - heavy randomized checks and bounded timeout assertions.
-- `assurance/bn_harness_divergence_test.rkt` - binary harness divergence and slower `/o` assurance checks.
-- `assurance/bt_harness_assurance_test.rkt` - heavier seeded BT harness checks.
-
-Documentation:
-- `docs/SPEC.md` - normative arithmetic and operational contract.
-- `docs/BALANCED_TERNARY_101.md` - practical guide for reading/writing raw BT terms.
-- `docs/ROADMAP.md` - phase sequencing and planning.
-- `docs/FASTER_MINIKANREN.md` - backend syntax and discipline notes.
-- `docs/INTEROP.md` - future interop strategy.
+Directory-level ownership docs:
+- `src/README.md`
+- `test/README.md`
+- `assurance/README.md`
+- `examples/README.md`
+- `docs/README.md`
 
 ## Normative vs explanatory docs
 
-Documentation SPOT policy:
-- Entry point: this `README.md`.
-- Normative source of truth: `docs/SPEC.md`.
-- Planning and future strategy docs may summarize or sequence work, but if any wording differs, `docs/SPEC.md` is authoritative.
+SPOT policy:
+- Entry and navigation: this `README.md`.
+- Normative semantics and acceptance contract: `docs/SPEC.md`.
+- Planning and strategy docs may summarize behavior, but `docs/SPEC.md` wins on conflicts.
+
+## Public release prep
+
+If you are preparing to publish this repository, use:
+- `docs/PUBLIC_RELEASE_CHECKLIST.md`
