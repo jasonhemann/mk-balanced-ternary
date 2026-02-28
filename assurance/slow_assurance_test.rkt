@@ -5,8 +5,7 @@
          racket/engine
          racket/random
          (file "../src/bt_oracle.rkt")
-         (prefix-in bt: (file "../src/bt_rel.rkt"))
-         (prefix-in bn: (file "../src/binary-numbers.rkt")))
+         (prefix-in bt: (file "../src/bt_rel.rkt")))
 
 (define (run1 thunk)
   (define sols (thunk))
@@ -45,50 +44,20 @@
     (check-not-false rz)
     (check-equal? (bt->int rz) (* a b))))
 
-(define (bn->int bn)
-  (let loop ([ds bn] [place 1] [acc 0])
-    (cond
-      [(null? ds) acc]
-      [else
-       (loop (cdr ds)
-             (* place 2)
-             (+ acc (* (car ds) place)))])))
-
-(define (int->bn n)
-  (cond
-    [(zero? n) '()]
-    [else (cons (modulo n 2) (int->bn (quotient n 2)))]))
-
-(test-case "assurance: binary pluso/*o heavy randomized"
-  (for ([k (in-range 1100)])
-    (define a (rand-int 0 350))
-    (define b (rand-int 0 350))
-    (define ra (int->bn a))
-    (define rb (int->bn b))
-    (define sum (run1 (lambda () (run 1 (q) (bn:pluso ra rb q)))))
-    (define prod (run1 (lambda () (run 1 (q) (bn:*o ra rb q)))))
-    (check-not-false sum)
-    (check-not-false prod)
-    (check-equal? (bn->int sum) (+ a b))
-    (check-equal? (bn->int prod) (* a b))))
-
 (test-case "assurance: engine timeout for known divergent shared-variable query"
-  ;; Known divergent shape from the original arithmetic discussion.
-  ;; Equivalent to searching for X where 3*(2X+1) = (2X+1), which never resolves.
+  ;; Known divergent shape under unbounded shared-variable aliasing.
   (check-times-out
-   120
+   200
    (lambda ()
-     (run 1 (q)
-       (fresh (x)
-         (bn:*o '(1 1) `(1 . ,x) `(1 0 . ,x))
-         (== q x))))))
+     (run 3 (q)
+       (bt:*o q q q)))))
 
 (test-case "assurance: engine returns on finite query (sanity)"
   (define e
     (engine
      (lambda (enable-stop)
-       (run 1 (q) (bn:pluso '(1) '(1) q)))))
+       (run 1 (q) (bt:pluso '(1) '(1) q)))))
   (define done? (engine-run 120 e))
   (check-true done?)
-  (check-equal? (engine-result e) '((0 1)))
+  (check-equal? (engine-result e) '((T 1)))
   (engine-kill e))
