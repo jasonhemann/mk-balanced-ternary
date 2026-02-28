@@ -42,14 +42,10 @@
 (define (build-fuel n)
   (build-list n (lambda (_) 'tick)))
 
-;; build-ival : Integer Integer -> IVal
-(define (build-ival lo hi)
-  (cons (build-num lo) (build-num hi)))
-
 ;; build-state : (Dict Integer Integer) -> State
 (define (build-state int-intervals)
   (for/list ([(lo hi) (in-dict int-intervals)])
-    (build-ival lo hi)))
+    (cons (build-num lo) (build-num hi))))
 
 ;; max-abs-from-bound : Bound -> Natural
 (define (max-abs-from-bound bound)
@@ -58,7 +54,7 @@
 ;; top-interval-from-bound : Bound -> IVal
 (define (top-interval-from-bound bound)
   (define m (max-abs-from-bound bound))
-  (build-ival (- m) m))
+  (cons (build-num (- m)) (build-num m)))
 
 ;; make-top-state : Natural Bound -> State
 (define (make-top-state vars bound)
@@ -96,18 +92,14 @@
 
 (defrel (min2o a b m bound)
   (conde
-    [(eq-boundedo a b bound)
-     (== m a)]
-    [(lto-boundedo a b bound)
+    [(leqo-boundedo a b bound)
      (== m a)]
     [(lto-boundedo b a bound)
      (== m b)]))
 
 (defrel (max2o a b m bound)
   (conde
-    [(eq-boundedo a b bound)
-     (== m a)]
-    [(lto-boundedo a b bound)
+    [(leqo-boundedo a b bound)
      (== m b)]
     [(lto-boundedo b a bound)
      (== m a)]))

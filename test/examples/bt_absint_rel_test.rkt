@@ -47,23 +47,32 @@
 (test-case "abstract interval arithmetic primitives"
   (check-equal?
    (run* (q)
-     (iaddo (build-ival -2 1) (build-ival 3 4) q B))
-   (list (build-ival 1 5)))
+     (iaddo (cons (build-num -2) (build-num 1))
+            (cons (build-num 3) (build-num 4))
+            q
+            B))
+   (list (cons (build-num 1) (build-num 5))))
   (check-equal?
    (run* (q)
-     (isubo (build-ival -2 1) (build-ival 3 4) q B))
-   (list (build-ival -6 -2)))
+     (isubo (cons (build-num -2) (build-num 1))
+            (cons (build-num 3) (build-num 4))
+            q
+            B))
+   (list (cons (build-num -6) (build-num -2))))
   (check-equal?
    (run* (q)
-     (imulo (build-ival -2 1) (build-ival 3 4) q B))
-   (list (build-ival -8 4))))
+     (imulo (cons (build-num -2) (build-num 1))
+            (cons (build-num 3) (build-num 4))
+            q
+            B))
+   (list (cons (build-num -8) (build-num 4)))))
 
 (test-case "big-step expression eval over interval state"
   (define st (build-state (list (cons -2 1) (cons 3 4))))
   (check-equal?
    (run* (q)
      (aevalo `(add ,(var IDX0) ,(var IDX1)) st q B))
-   (list (build-ival 1 5))))
+   (list (cons (build-num 1) (build-num 5)))))
 
 (test-case "surface parser lowers Racket-style syntax"
   (define vars '(x y))
