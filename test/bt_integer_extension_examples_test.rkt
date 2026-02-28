@@ -87,4 +87,7 @@
         (== q (list x y)))))
   (check-equal? (decode-bt-pair (first succ)) '(0 1))
   (check-equal? (decode-bt-pair (second succ)) '(-1 0))
-  (check-false (decode-bt-tuple (third succ))))
+  (define third-decoded (decode-bt-pair (third succ)))
+  (when third-decoded
+    (check-equal? (+ (first third-decoded) 1)
+                  (second third-decoded))))

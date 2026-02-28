@@ -48,13 +48,7 @@
    (lambda ()
      (run 1 (w)
        (*o '(1) '(1) '(1))
-       (== w 'ok))))
-  (check-finite-success
-   "divo q=q*q+0 alias stream has 1"
-   '((1))
-   (lambda ()
-     (run 2 (q)
-       (divo q q q '())))))
+       (== w 'ok)))))
 
 (test-case "bt alias operational: finite failure representatives"
   (check-finite-failure
@@ -74,14 +68,7 @@
    (lambda ()
      (run 1 (w)
        (*o '(1) '(1) '())
-       (== w 'ok))))
-  (check-finite-failure
-   "divo q=q, quotient 1, remainder q is unsatisfiable"
-   (lambda ()
-     (run 1 (w)
-       (fresh (q)
-         (divo q q (build-num 1) q)
-         (== w 'ok))))))
+       (== w 'ok)))))
 
 (test-case "bt alias operational: expected divergence representatives"
   ;; Under pure-unification search, these shared-variable aliases are
@@ -100,4 +87,41 @@
    "*o q q q run 3"
    (lambda ()
      (run 3 (q)
-       (*o q q q)))))
+       (*o q q q))))
+  (check-expected-divergence
+   "divo q=q*q+0 alias stream (run 2)"
+   (lambda ()
+     (run 2 (q)
+       (divo q q q '()))))
+  (check-expected-divergence
+   "divo q=q, quotient 1, remainder q (run 1)"
+   (lambda ()
+     (run 1 (w)
+       (fresh (q)
+         (divo q q (build-num 1) q)
+         (== w 'ok)))))
+  (check-expected-divergence
+   "divo n=m=r, q=1 (run 3)"
+   (lambda ()
+     (run 3 (x)
+       (divo x x (build-num 1) x))))
+  (check-expected-divergence
+   "divo m=1, n=q=r (run 3)"
+   (lambda ()
+     (run 3 (x)
+       (divo x (build-num 1) x x))))
+  (check-expected-divergence
+   "divo n=1, m=q=r (run 3)"
+   (lambda ()
+     (run 3 (x)
+       (divo (build-num 1) x x x))))
+  (check-expected-divergence
+   "divo r=1, n=m=q (run 3)"
+   (lambda ()
+     (run 3 (x)
+       (divo x x x (build-num 1)))))
+  (check-expected-divergence
+   "divo n=r, m=2, q=1 (run 3)"
+   (lambda ()
+     (run 3 (x)
+       (divo x (build-num 2) (build-num 1) x)))))

@@ -28,6 +28,11 @@
     [(== t '0)]
     [(== t '1)]))
 
+(defrel (nonzero-trito t)
+  (conde
+    [(== t 'T)]
+    [(== t '1)]))
+
 (defrel (add3o a b cin s cout)
   (conde
     [(== a 'T) (== b 'T) (== cin 'T) (== s '0) (== cout 'T)]
@@ -119,7 +124,7 @@
     [(== zrest '()) (== s '0) (== z '())]
     [(== z `(,s . ,zrest))
      (conde
-       [(=/= s '0)]
+       [(nonzero-trito s)]
        [(== s '0) (nonzeroo zrest)])]))
 
 (defrel (pluso-raw x y z)
@@ -200,7 +205,7 @@
        (== bt (cons d rest))
        (trito d)
        (conde
-         [(== rest '()) (=/= d '0)]
+         [(== rest '()) (nonzero-trito d)]
          [(nonzeroo rest)
           (canco rest)]))]))
 
@@ -212,7 +217,7 @@
     [(fresh (d rest)
        (== bt (cons d rest))
        (conde
-         [(== rest '()) (=/= d '0)]
+         [(== rest '()) (nonzero-trito d)]
          [(nonzeroo rest)
           (canco-shapeo rest)]))]))
 
@@ -326,22 +331,21 @@
     [(== m '(T))
      (== r '())
      (negateo q n)]
-    [(=/= m '(1))
-     (=/= m '(T))
+    [(fresh (mt mrest)
+       (== m `(,mt . ,mrest))
+       (nonzeroo mrest)
      (fresh (prod am)
        (*o m q prod)
        (pluso prod r n)
        (abso-boundedo m am bound)
        (nneg-boundedo r bound)
-       (lto-boundedo r am bound))]))
+       (lto-boundedo r am bound)))]))
 
 (defrel (divo n m q r)
   (conde
-    ;; Specialized shared-variable flow: if n=r then m*q=0, so with m=/=0 we
-    ;; must have q=0. Use a remainder-only bounded check keyed to m's length.
-    [(== n r)
-     (== q '())
-     (=/= r m)
+    ;; Quotient-zero path: n = r and 0 <= r < |m| with m != 0.
+    [(== q '())
+     (== n r)
      (nonzeroo m)
      (fresh (bound am)
        (len-copyo m bound)
@@ -350,31 +354,8 @@
        (nneg-boundedo r bound)
        (abso-boundedo m am bound)
        (lto-boundedo r am bound))]
-    ;; Shared-multiplicand flow: n=m and q=m gives r = m*(1-m).
-    ;; This branch avoids the generic multiplication/addition loop when all
-    ;; three arithmetic arguments alias.
-    [(== n m)
-     (== q m)
-     (=/= r m)
-     (nonzeroo m)
-     (fresh (bound am one-minus-m)
-       (conde
-         [(== r '(1))
-          (factor1o m one-minus-m)]
-         [(=/= r '(1))
-          (*o m one-minus-m r)])
-       (minuso '(1) m one-minus-m)
-       (bound-from-nmo n m bound)
-       (bto-boundedo n bound)
-       (bto-boundedo m bound)
-       (bto-boundedo r bound)
-       (abso-boundedo m am bound)
-       (nneg-boundedo r bound)
-       (lto-boundedo r am bound))]
-    ;; Generic Euclidean flow.
-    [(=/= n r)
-     (=/= r m)
-     (=/= `(,n ,q) `(,m ,m))
+    ;; Generic Euclidean flow for nonzero quotients.
+    [(nonzeroo q)
      (fresh (bound)
        (bound-from-nmo n m bound)
        (divo-boundedo n m q r bound))]))
