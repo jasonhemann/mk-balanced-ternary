@@ -85,7 +85,8 @@
    (intervalo-boundedo io bound)))
 
 (defmatche (isubo i1 i2 io bound)
-  ;; [l1,u1] - [l2,u2] = [l1-u2, u1-l2]
+  ;; Separate from iaddo: interval subtraction is endpoint-crossed, not
+  ;; endpointwise add, i.e., [l1,u1]-[l2,u2] = [l1-u2, u1-l2].
   ([(,l1 . ,u1) (,l2 . ,u2) (,lo . ,hi) ,bound]
    (intervalo-boundedo i1 bound)
    (intervalo-boundedo i2 bound)
