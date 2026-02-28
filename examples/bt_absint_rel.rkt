@@ -24,10 +24,8 @@
 ;;   stmt  ::= skip
 ;;           | (set! symbol expr)
 ;;           | (begin stmt ...)
-;;           | (if (< expr 0) stmt stmt)
-;;           | (if (negative? expr) stmt stmt)
-;;           | (while (< expr 0) stmt)
-;;           | (while (negative? expr) stmt)
+;;           | (if-negative? expr stmt stmt)
+;;           | (while-negative? expr stmt)
 ;; Variables are mapped by position from a user-provided list, e.g.
 ;;   '(x y z) => x:'(), y:'(s), z:'(s s).
 

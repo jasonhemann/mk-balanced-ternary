@@ -22,10 +22,8 @@
 ;;   stmt  ::= skip
 ;;           | (set! symbol expr)
 ;;           | (begin stmt ...)
-;;           | (if (< expr 0) stmt stmt)
-;;           | (if (negative? expr) stmt stmt)
-;;           | (while (< expr 0) stmt)
-;;           | (while (negative? expr) stmt)
+;;           | (if-negative? expr stmt stmt)
+;;           | (while-negative? expr stmt)
 ;; Variables are mapped by position from a user-provided list, e.g.
 ;;   '(x y z) => x:'(), y:'(s), z:'(s s).
 
@@ -58,13 +56,6 @@
      `(mul ,(surface->expr/env env e1)
            ,(surface->expr/env env e2))]))
 
-;; surface-test->expr/env : (Hash Symbol Idx) SurfaceTest -> Expr
-(define (surface-test->expr/env env t)
-  (match t
-    [`(< ,e 0) (surface->expr/env env e)]
-    [`(negative? ,e) (surface->expr/env env e)]
-    [`(neg? ,e) (surface->expr/env env e)]))
-
 ;; seqify : (Listof Stmt) -> Stmt
 (define (seqify stmts)
   (cond
@@ -81,12 +72,12 @@
               ,(surface->expr/env env e))]
     [`(begin . ,ss)
      (seqify (map (lambda (st) (surface->stmt/env env st)) ss))]
-    [`(if ,tst ,s1 ,s2)
-     `(if-neg ,(surface-test->expr/env env tst)
+    [`(if-negative? ,e ,s1 ,s2)
+     `(if-neg ,(surface->expr/env env e)
               ,(surface->stmt/env env s1)
               ,(surface->stmt/env env s2))]
-    [`(while ,tst ,body)
-     `(while-neg ,(surface-test->expr/env env tst)
+    [`(while-negative? ,e ,body)
+     `(while-neg ,(surface->expr/env env e)
                  ,(surface->stmt/env env body))]))
 
 ;; surface->expr : (Listof Symbol) SurfaceExpr -> Expr
@@ -96,3 +87,57 @@
 ;; surface->stmt : (Listof Symbol) SurfaceStmt -> Stmt
 (define (surface->stmt vars s)
   (surface->stmt/env (build-var-env vars) s))
+
+(module+ test
+  (require rackunit
+           minikanren
+           (file "bt_absint_rel.rkt"))
+
+  (define (mk-bound len)
+    (build-list len (lambda (_) 'k)))
+
+  (define B (mk-bound 3))
+  (define IDX0 (build-idx 0))
+  (define IDX1 (build-idx 1))
+
+  (test-case "surface parser lowers Racket-style syntax"
+    (define vars '(x y))
+    (check-equal?
+     (surface->expr vars '(- x))
+     `(sub (lit ,(build-num 0)) (var ,IDX0)))
+    (check-equal?
+     (surface->stmt vars '(if-negative? x (set! y 5) (set! y 7)))
+     `(if-neg (var ,IDX0)
+              (assign ,IDX1 (lit ,(build-num 5)))
+              (assign ,IDX1 (lit ,(build-num 7)))))
+    (define stmt
+      (surface->stmt
+       vars
+       '(begin
+          (set! y (+ x 1))
+          (if-negative? y (set! y 5) (set! y 7)))))
+    (define st-in (build-state (list (cons -3 -3) (cons 0 0))))
+    (check-equal?
+     (run* (q)
+       (execo stmt st-in q B (build-fuel 5) (make-top-state 2 B)))
+     (list (build-state (list (cons -3 -3) (cons 5 5))))))
+
+  (test-case "capstone: factorial-style countdown with nested arithmetic"
+    (define vars '(i acc chk))
+    (define B4 (mk-bound 4))
+    (define stmt
+      (surface->stmt
+       vars
+       '(begin
+          (set! acc 1)
+          (while-negative? i
+            (begin
+              (set! acc (+ (* acc (- 0 i)) 0))
+              (set! i (+ i 1))))
+          (set! chk (+ (* acc 1) (+ i 0))))))
+    (define st-in (build-state (list (cons -4 -4) (cons 0 0) (cons 0 0))))
+    (define st-out (build-state (list (cons 0 0) (cons 24 24) (cons 24 24))))
+    (check-equal?
+     (run* (q)
+       (execo stmt st-in q B4 (build-fuel 8) (make-top-state 3 B4)))
+     (list st-out))))
