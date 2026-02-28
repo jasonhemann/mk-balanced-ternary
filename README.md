@@ -30,10 +30,41 @@ Run slower assurance tests:
 raco test assurance
 ```
 
-Try the playground in DrRacket / REPL:
+## Try it in DrRacket / REPL
+
+Playground queries:
 
 ```racket
 (require (file "examples/bt_playground.rkt"))
+```
+
+Abstract interpretation example (surface syntax + big-step relation):
+
+```racket
+(require minikanren
+         (file "examples/bt_absint_rel.rkt")
+         (file "examples/bt_absint_surface.rkt"))
+
+(define vars '(i acc chk))
+(define stmt
+  (surface->stmt
+   vars
+   '(begin
+      (set! acc 1)
+      (while-negative? i
+        (begin
+          (set! acc (+ (* acc (- 0 i)) 0))
+          (set! i (+ i 1))))
+      (set! chk (+ (* acc 1) (+ i 0))))))
+
+(define B4 (build-list 4 (lambda (_) 'k)))
+(run* (q)
+  (execo stmt
+         (build-state (list (cons -4 -4) (cons 0 0) (cons 0 0)))
+         q
+         B4
+         (build-fuel 8)
+         (make-top-state 3 B4)))
 ```
 
 ## Project map
@@ -58,7 +89,7 @@ SPOT policy:
 - Normative semantics and acceptance contract: `docs/SPEC.md`.
 - Planning and strategy docs may summarize behavior, but `docs/SPEC.md` wins on conflicts.
 
-## Public release prep
+## Known limitations
 
-If you are preparing to publish this repository, use:
-- `docs/PUBLIC_RELEASE_CHECKLIST.md`
+- Unbounded shared-variable alias goals (for example `(*o q q q)` beyond early answers) are expected to diverge under pure-unification search.
+- Finite closure/completeness claims are made for bounded modes covered by `test/` and `assurance/`.

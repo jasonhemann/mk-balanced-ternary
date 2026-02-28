@@ -18,7 +18,5 @@ This directory separates normative requirements from planning and explanatory no
   - Future strategy for mixed-representation arithmetic and translation.
 - `RELATED_WORK.md`
   - External reference links and attribution for upstream paper/code.
-- `PUBLIC_RELEASE_CHECKLIST.md`
-  - Practical pre-publication cleanup checklist for docs/tests/repo hygiene.
 
 When documents differ, `SPEC.md` is authoritative.
