@@ -12,6 +12,17 @@ Implemented and test-backed:
 - Oracle conversions for tests: `bt->int`, `int->bt`.
 - Example relational abstract interpreter over interval states.
 
+## Division model at a glance
+
+- `divo` is Euclidean: `n = m*q + r`, `m =/= 0`, `0 <= r < |m|`.
+- Public API stays 4-ary: `(divo n m q r)`.
+- Operational bounds are internalized with shape relations (no bound arg at call-site).
+- Some shared-variable alias classes are expected divergence under pure unification
+  (for example `(*o q q q)` and selected `divo n=r` alias forms).
+- Detailed contracts:
+  - normative: `docs/SPEC.md`
+  - programmer/audit guide: `docs/BALANCED_TERNARY_101.md`
+
 ## Quickstart
 
 Prerequisites:

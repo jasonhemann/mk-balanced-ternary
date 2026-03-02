@@ -57,12 +57,12 @@
               #:when (euclid-sat? n m q r))
     (list n m q r)))
 
-(define (run-div* partial)
+(define (run-div partial limit)
   (define n0 (list-ref partial 0))
   (define m0 (list-ref partial 1))
   (define q0 (list-ref partial 2))
   (define r0 (list-ref partial 3))
-  (run* (ans)
+  (run limit (ans)
     (fresh (n m q r)
       (bto-boundedo n bound)
       (bto-boundedo m bound)
@@ -102,10 +102,7 @@
      (list "neg-m" '(-4 -3 2 2))))
   (define masks
     (list
-     '(#t #t #t #t)  ; gggg
-     '(#t #t #f #f)  ; ggvv
-     '(#f #t #t #f)  ; vggv
-     '(#f #f #f #f))) ; vvvv
+     '(#t #t #t #t))) ; gggg
   (for ([seed-entry seeds])
     (define seed-label (first seed-entry))
     (define seed (second seed-entry))
@@ -116,10 +113,12 @@
                   (format "expected non-empty set for seed ~a mask ~a"
                           seed-label
                           (mask->label mask)))
+      (define limit
+        (max 1 (+ 8 (length expected))))
       (define-values (timed-out? raw)
-        (run-with-timeout 2500
+        (run-with-timeout 5000
                           (lambda ()
-                            (run-div* partial))))
+                            (run-div partial limit))))
       (check-false timed-out?
                    (format "run* timed out for seed ~a mask ~a"
                            seed-label

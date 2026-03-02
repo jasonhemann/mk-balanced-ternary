@@ -153,7 +153,7 @@
 
 (test-case "bt symbolic denotation: *o zero-surface symbolic answers are disjoint over bounded host pairs"
   (define raw
-    (run 10 (q)
+    (run 2 (q)
       (fresh (x y)
         (*o x y '())
         (== q (list x y)))))

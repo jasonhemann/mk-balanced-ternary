@@ -13,6 +13,7 @@ Run with:
 - `raco test assurance/bt_mul_mode_profile_assurance_test.rkt`
 - `raco test assurance/bt_div_exhaustive_mode_assurance_test.rkt`
 - `raco test assurance/bt_alias_operational_assurance_test.rkt`
+- `raco test assurance/bt_div_productivity_assurance_test.rkt`
 - `raco test assurance/bt_symbolic_denotation_assurance_test.rkt`
 
 Purpose:
@@ -53,6 +54,12 @@ Purpose:
 - Dedicated BT alias operational classification checks:
   - representative alias goals for `pluso`, `minuso`, `*o`, and `divo`,
   - classified as finite success, finite failure, or expected divergence.
+  - includes bounded `divo` alias shapes such as `n=r` with fixed `m,q`,
+    currently tracked as expected divergence under pure-unification dispatch.
+- Dedicated BT division productivity classification checks:
+  - required finite queries are tested at escalating budgets (2s, 6s, 20s),
+  - cases that close late are logged as slow,
+  - cases that do not close by the highest budget are treated as divergence bugs.
 - Dedicated BT symbolic denotation assurance checks:
   - open-mode symbolic partition checks for `pluso`, `minuso`, and `*o`,
   - exact coverage + non-overlap over host domains at len<=4,

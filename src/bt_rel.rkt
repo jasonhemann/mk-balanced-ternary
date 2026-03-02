@@ -4,23 +4,14 @@
 
 ;; Host helper for REPL/tests, analogous to binary `build-num`.
 ;; Produces canonical LSD-first balanced-ternary numerals.
-(define (build-num n)
-  (unless (exact-integer? n)
-    (error 'build-num "expected exact integer, got: ~a" n))
-  (let loop ([k n])
-    (cond
-      [(zero? k) '()]
-      [else
-       (define r (modulo k 3))
-       (define d (case r
-                   [(0) '0]
-                   [(1) '1]
-                   [(2) 'T]))
-       (define next (case r
-                      [(0) (/ k 3)]
-                      [(1) (/ (- k 1) 3)]
-                      [(2) (/ (+ k 1) 3)]))
-       (cons d (loop next))])))
+(define (build-num k)
+  (cond
+	[(zero? k) '()]
+	[else
+	  (case (modulo k 3)
+		[(0) (cons '0 (build-num (/ k 3)))]
+		[(1) (cons '1 (build-num (/ (- k 1) 3)))]
+		[(2) (cons 'T (build-num (/ (+ k 1) 3)))])]))
 
 (defrel (trito t)
   (conde
@@ -156,11 +147,6 @@
     [(== b '1) (== out x)]
     [(== b 'T) (nego x out)]))
 
-(defrel (factor1o a b)
-  (conde
-    [(== a '(1)) (== b '(1))]
-    [(== a '(T)) (== b '(T))]))
-
 (defrel (nonzeroo n)
   (fresh (a d)
     (== `(,a . ,d) n)))
@@ -178,14 +164,18 @@
     [(nonzeroo x) (== '() z) (== '() y)]
     [(== '(1) x) (nonzeroo y) (== y z)]
     [(== '(1) y) (not-oneo x) (== x z)]
+    [(== '(T) y)
+     (not-oneo x)
+     (canco-shapeo x)
+     (nego x z)]
     [(fresh (b0 yrest xb0 xyrest shifted)
        (nonzeroo x)
        (nonzeroo z)
        (not-oneo x)
-       (not-oneo y)
+       (== `(,b0 . ,yrest) y)
+       (nonzeroo yrest)
        (len<=o x z)
        (len<=o y z)
-       (== `(,b0 . ,yrest) y)
        (mul1o x b0 xb0)
        (*o x yrest xyrest)
        (shift3o xyrest shifted)
@@ -215,7 +205,7 @@
   (conde
     [(== bt '())]
     [(fresh (d rest)
-       (== bt (cons d rest))
+       (== bt `(,d . ,rest))
        (conde
          [(== rest '()) (nonzero-trito d)]
          [(nonzeroo rest)
@@ -254,12 +244,12 @@
        (== `(,marker . ,outrest) out)
        (len-appendo d y outrest))]))
 
-;; Internal Euclidean-division bound derived from dividend/divisor shape:
+;; Internal Euclidean-division bound relation from dividend/divisor shape:
 ;; length(bound) = 1 + len(n) + len(m).
-(defrel (bound-from-nmo n m bound)
+(defrel (nmo-boundo n m bound)
   (fresh (nm)
-    (len-appendo n m nm)
-    (== `(k . ,nm) bound)))
+    (== `(k . ,nm) bound)
+    (len-appendo n m nm)))
 
 (defrel (zeroo n)
   (== n '()))
@@ -309,53 +299,183 @@
 
 (defrel (abso-boundedo n a bound)
   (conde
-    [(nneg-boundedo n bound)
-     (== a n)]
+    [(== a n)
+     (nneg-boundedo n bound)]
     [(lto-boundedo n '() bound)
      (negateo n a)
      (nneg-boundedo a bound)]))
+
+;; Relate a trit digit with its canonical one-digit numeral.
+(defrel (digit-numo d n)
+  (conde
+    [(== d 'T) (== n '(T))]
+    [(== d '0) (== n '())]
+    [(== d '1) (== n '(1))]))
+
+;; t = 3*r + d, where d is one trit.
+(defrel (times3-plus-digito r d t)
+  (conde
+    [(== r '())
+     (digit-numo d t)]
+    [(== t `(,d . ,r))
+     (nonzeroo r)
+     (trito d)]))
+
+;; Local quotient/remainder correction for one LSD-first step:
+;; n = d + 3*n', with n' = m*q' + r' and t = d + 3*r'.
+;; Choose k in {-1,0,1,2} so q = 3*q' + k and r = t - k*m.
+(defrel (div-correcto t m qrest q r bound)
+  (fresh (qshift)
+    (shift3o qrest qshift)
+    (conde
+      ;; Clause 1 (k=-1): if t<0, pull one m from remainder into quotient.
+      ;; q = 3*qrest - 1, r = t + m.
+      [(lto-boundedo t '() bound)
+       (pluso q '(1) qshift)
+       (pluso t m r)]
+      ;; Clause 2 (k=0): if 0<=t<m, quotient trit is 0.
+      ;; q = 3*qrest, r = t.
+      [(== r t)
+       (== q qshift)
+       (nneg-boundedo t bound)
+       (lto-boundedo t m bound)]
+      ;; Clause 3 (k=1): if m<=t<2m, quotient trit is +1.
+      ;; q = 3*qrest + 1, r = t - m.
+      [(fresh (u)
+         (== r u)
+         (nneg-boundedo u bound)
+         (lto-boundedo u m bound)
+         (pluso m u t)
+         (pluso qshift '(1) q))]
+      ;; Clause 4 (k=2): if 2m<=t<3m, quotient trit is +2 (BT term '(T 1)).
+      ;; q = 3*qrest + 2, r = t - 2m.
+      [(fresh (u mm)
+         (== r u)
+         (nneg-boundedo u bound)
+         (lto-boundedo u m bound)
+         (pluso m m mm)
+         (pluso mm u t)
+         (pluso qshift '(T 1) q))])))
+
+;; Nonnegative Euclidean division core for positive divisor.
+;; Recurrence follows n = d + 3*n' and fixes one quotient trit per step.
+(defrel (divo-nat-boundedo n m q r bound)
+  (nneg-boundedo n bound)
+  (poso-boundedo m bound)
+  (conde
+    ;; Clause 1 (n<m): base long-division case q=0, r=n.
+    ;; productive-modes: ggvv, gggv, ggvg
+    ;; risk: open n/m can defer the strict-order split.
+    [(== r n)
+	 (== q '())
+	 (fresh (mt md)
+       (== m `(,mt . ,md))
+       (nonzeroo md)
+       (lto-boundedo n m bound))]
+    ;; Clause 2 (m=1): exact unit-division case q=n, r=0.
+    ;; productive-modes: ggvv, gggv
+    ;; risk: open m can interleave with other clauses.
+    [(== m '(1))
+     (== q n)
+     (== r '())]
+    ;; Clause 3 (step): peel one dividend trit and recurse on nrest.
+    ;; productive-modes: ggvv, gggv (bounded inverse templates)
+    ;; risk: open t can fan correction branches in div-correcto.
+    [(fresh (mt md d nrest)
+       (== n `(,d . ,nrest))
+	   (== m `(,mt . ,md))
+	   (trito d)
+       (nonzeroo md)
+       (conde
+         [(eq-boundedo n m bound)]
+         [(lto-boundedo m n bound)])
+       (fresh (qrest rrest t)
+         (divo-nat-boundedo nrest m qrest rrest bound)
+         (times3-plus-digito rrest d t)
+         (div-correcto t m qrest q r bound)))])
+  (nneg-boundedo q bound)
+  (nneg-boundedo r bound)
+  (lto-boundedo r m bound))
 
 ;; Euclidean division over bounded BT integers:
 ;; n = m*q + r, m != 0, and 0 <= r < |m|.
 (defrel (divo-boundedo n m q r bound)
   (bto-boundedo n bound)
-  (bto-boundedo m bound)
-  (bto-boundedo q bound)
-  (bto-boundedo r bound)
   (nonzeroo m)
+  (bto-boundedo m bound)
   (conde
-    ;; Euclidean remainder is always 0 for |m|=1.
-    [(== m '(1))
-     (== r '())
-     (== n q)]
-    [(== m '(T))
-     (== r '())
-     (negateo q n)]
-    [(fresh (mt mrest)
-       (== m `(,mt . ,mrest))
-       (nonzeroo mrest)
-     (fresh (prod am)
-       (*o m q prod)
-       (pluso prod r n)
-       (abso-boundedo m am bound)
-       (nneg-boundedo r bound)
-       (lto-boundedo r am bound)))]))
+    ;; Clause 1 (m>0): run nat core directly or via |n| translation.
+    ;; productive-modes: gggg, ggvv, bounded vggv
+    ;; risk: open n sign split may interleave both branches.
+    [(poso-boundedo m bound)
+     (conde
+       ;; Clause 1a (n>=0): direct nonnegative core.
+       ;; productive-modes: gggg, ggvv
+       ;; risk: open q/r may still explore deep bounded search.
+       [(nneg-boundedo n bound)
+        (nneg-boundedo q bound)
+        (divo-nat-boundedo n m q r bound)]
+       ;; Clause 1b (n<0): divide |n|, then map back to Euclidean pair.
+       ;; productive-modes: gggg, ggvv
+       ;; risk: inexact branch adds one quotient-shift/construction choice.
+       [(fresh (an q0 r0)
+          (lto-boundedo n '() bound)
+          (negateo n an)
+          (nneg-boundedo an bound)
+          (conde
+            ;; Clause 1b.i: exact division stays exact under sign flip.
+            ;; Prune early when caller already constrains r = 0.
+            [(== r '())
+             (divo-nat-boundedo an m q0 '() bound)
+             (negateo q0 q)]
+            ;; Clause 1b.ii: otherwise shift quotient by -1 and complement remainder.
+            ;; Prune exact branch early when caller constrains r /= 0.
+            [(nonzeroo r)
+             (divo-nat-boundedo an m q0 r0 bound)
+             (nonzeroo r0)
+             (fresh (q0+1)
+               (pluso q0 '(1) q0+1)
+               (negateo q0+1 q)
+               (pluso r0 r m))]))])]
+    ;; Clause 2 (m<0): divide by |m| and adjust quotient sign.
+    ;; productive-modes: gggg, ggvv, bounded vggv
+    ;; risk: open m sign split introduces additional translation work.
+    [(fresh (am)
+       (lto-boundedo m '() bound)
+       (negateo m am)
+       (poso-boundedo am bound)
+       (conde
+         ;; Clause 2a (n>=0): q sign flips, remainder unchanged.
+         [(fresh (q0)
+            (nneg-boundedo n bound)
+            (divo-nat-boundedo n am q0 r bound)
+            (negateo q0 q))]
+         ;; Clause 2b (n<0): both signs negative; adjust as in m>0 case.
+         [(fresh (an q0 r0)
+            (lto-boundedo n '() bound)
+            (negateo n an)
+            (nneg-boundedo an bound)
+            (conde
+              ;; Clause 2b.i: exact division.
+              ;; Prune early when caller already constrains r = 0.
+              [(== r '())
+               (divo-nat-boundedo an am q '() bound)]
+              ;; Clause 2b.ii: inexact division, bump q by +1 and complement r.
+              ;; Prune exact branch early when caller constrains r /= 0.
+              [(nonzeroo r)
+               (divo-nat-boundedo an am q0 r0 bound)
+               (nonzeroo r0)
+               (pluso q0 '(1) q)
+               (pluso r0 r am)]))]))]))
 
 (defrel (divo n m q r)
-  (conde
-    ;; Quotient-zero path: n = r and 0 <= r < |m| with m != 0.
-    [(== q '())
-     (== n r)
-     (nonzeroo m)
-     (fresh (bound am)
-       (len-copyo m bound)
-       (bto-boundedo m bound)
-       (bto-boundedo r bound)
-       (nneg-boundedo r bound)
-       (abso-boundedo m am bound)
-       (lto-boundedo r am bound))]
-    ;; Generic Euclidean flow for nonzero quotients.
-    [(nonzeroo q)
-     (fresh (bound)
-       (bound-from-nmo n m bound)
-       (divo-boundedo n m q r bound))]))
+  (fresh (qbound)
+    ;; Public wrapper (uniform policy, no q/r case split):
+    ;; 1) derive structural bound from n,m shape,
+    ;; 2) run bounded Euclidean core under that envelope,
+    ;; 3) enforce quotient length.
+    ;; productive-modes: gggg, ggvv, bounded inverse templates
+    ;; risk: fully open alias classes remain intentionally unbounded.
+    (nmo-boundo n m qbound)
+    (divo-boundedo n m q r qbound)
+    (len<=o q qbound)))

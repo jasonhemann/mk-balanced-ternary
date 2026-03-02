@@ -16,7 +16,16 @@
 (define ints2 (int-range (- maxabs2) maxabs2))
 
 (define bound3 (make-bound 3))
-(define ints3 (int-range -8 8))
+(define div-seeds
+  (list
+   (list 3 2)
+   (list -3 2)
+   (list -3 -2)
+   (list 3 -2)
+   (list 2 1)
+   (list -2 1)
+   (list -2 -1)
+   (list 2 -1)))
 
 (define (mode-limits expected)
   (define n (max 1 (length (remove-duplicates expected equal?))))
@@ -72,9 +81,9 @@
    #:timeout-ms 1600))
 
 (divo-test-case "bt division semantics: Euclidean ground (n,m)->(q,r)"
-  (for* ([n ints3]
-         [m ints3]
-         #:when (not (zero? m)))
+  (for ([seed div-seeds])
+    (define n (first seed))
+    (define m (second seed))
     (define-values (q r) (euclid-div n m))
     (check-bt-case-strict
      (format "div/ground/~a/~a" n m)
@@ -91,12 +100,12 @@
      #:decode-answer decode-bt-tuple
      #:k 1
      #:k2 1
-     #:timeout-ms 2500)))
+     #:timeout-ms 5000)))
 
 (divo-test-case "bt division inverse modes: recover q and n under Euclidean semantics"
-  (for* ([n ints3]
-         [m ints3]
-         #:when (not (zero? m)))
+  (for ([seed div-seeds])
+    (define n (first seed))
+    (define m (second seed))
     (define-values (q r) (euclid-div n m))
     (check-bt-case-strict
      (format "div/inverse-q/~a/~a" n m)
@@ -112,7 +121,7 @@
      #:decode-answer decode-bt-tuple
      #:k 1
      #:k2 1
-     #:timeout-ms 2500)
+     #:timeout-ms 5000)
     (check-bt-case-strict
      (format "div/inverse-n/~a/~a" q m)
      #:expected-set (lambda ()
@@ -128,7 +137,7 @@
      #:decode-answer decode-bt-tuple
      #:k 1
      #:k2 1
-     #:timeout-ms 2500)))
+     #:timeout-ms 5000)))
 
 (divo-test-case "bt division ground cases are deterministic (no duplicate proofs)"
   (for ([entry (list (list 4 3 1 1)

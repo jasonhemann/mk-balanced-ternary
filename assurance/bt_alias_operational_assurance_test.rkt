@@ -5,6 +5,8 @@
          racket/engine
          (file "../src/bt_rel.rkt"))
 
+(define alias-bound '(k k k k))
+
 (define (run-with-timeout timeout-ms thunk)
   (define e (engine (lambda (_stop) (thunk))))
   (define done? (engine-run timeout-ms e))
@@ -68,6 +70,12 @@
    (lambda ()
      (run 1 (w)
        (*o '(1) '(1) '())
+       (== w 'ok))))
+  (check-finite-failure
+   "divo impossible ground witness"
+   (lambda ()
+     (run 1 (w)
+       (divo '(1) '(1) '() '(1))
        (== w 'ok)))))
 
 (test-case "bt alias operational: expected divergence representatives"
@@ -88,6 +96,41 @@
    (lambda ()
      (run 3 (q)
        (*o q q q))))
+  (check-expected-divergence
+   "divo n=r, m=2, q=0 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num 2) '() x)))
+   #:timeout-ms 1800)
+  (check-expected-divergence
+   "divo n=r, m=-2, q=0 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num -2) '() x)))
+   #:timeout-ms 1800)
+  (check-expected-divergence
+   "divo n=r, m=2, q=1 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num 2) (build-num 1) x)))
+   #:timeout-ms 1800)
+  (check-expected-divergence
+   "divo n=r, m=-2, q=1 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num -2) (build-num 1) x)))
+   #:timeout-ms 1800)
+  (check-expected-divergence
+   "divo n=r, m=2, q=-1 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num 2) (build-num -1) x)))
+   #:timeout-ms 1800)
   (check-expected-divergence
    "divo q=q*q+0 alias stream (run 2)"
    (lambda ()
@@ -119,9 +162,4 @@
    "divo r=1, n=m=q (run 3)"
    (lambda ()
      (run 3 (x)
-       (divo x x x (build-num 1)))))
-  (check-expected-divergence
-   "divo n=r, m=2, q=1 (run 3)"
-   (lambda ()
-     (run 3 (x)
-       (divo x (build-num 2) (build-num 1) x)))))
+       (divo x x x (build-num 1))))))

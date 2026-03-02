@@ -100,3 +100,11 @@
    #:k 8
    #:k2 16
    #:timeout-ms 2200))
+
+(test-case "bt *o canonical regression: q * T = q has only canonical zero in bounded domain"
+  ;; Prevent non-canonical zero families (e.g. (0 0 ...)) from surfacing.
+  (check-equal?
+   (run 10 (q)
+     (bto-boundo q 3)
+     (*o q '(T) q))
+   '(())))

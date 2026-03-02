@@ -14,6 +14,9 @@ Balanced-ternary integers are represented as LSD-first lists of trits.
 - Trit symbols: `'T`, `'0`, `'1`, where `'T` means -1.
 - Zero is `'()`.
 - Canonical non-zero form: the most-significant trit (last list element) is not `'0`.
+- Domain assumption: arithmetic relations are specified over this BT numeral
+  domain (and partially instantiated logical generalizations of it). Behavior
+  on malformed concrete non-BT terms is out of scope.
 
 ## 3. Purity and layering
 
@@ -64,6 +67,19 @@ The following relations are required:
   - Must satisfy: `n = m*q + r`, `m =/= 0`, `0 <= r < |m|`.
   - Public surface is 4-ary (no explicit bound argument).
   - Any bound/ordering helper arguments remain internal to the implementation.
+  - Constructive core (nonnegative division by positive divisor):
+    - Decompose dividend as `n = d + 3*n'` (LSD-first).
+    - Recurse on `n' = m*q' + r'`.
+    - Form `t = d + 3*r'`, then choose correction digit `k in {-1,0,1,2}`:
+      - `q = 3*q' + k`
+      - `r = t - k*m`
+      - with local branch conditions guaranteeing `0 <= r < m`.
+  - Signed wrapper:
+    - Translate to the nonnegative core with `|n|` and/or `|m|`,
+      then map `(q,r)` back to Euclidean form for the original signs.
+  - Internal bound construction:
+    - shape bound from dividend/divisor: `len(bound) = 1 + len(n) + len(m)`.
+    - quotient constrained by `len(q) <= len(bound)`.
 
 ## 5. Operational and mode contract
 
@@ -98,6 +114,10 @@ The current phase uses three operational classes:
   - canonical example: `(*o q q q)` beyond the first two answers.
   - analogous additive aliases such as `(pluso q q q)` and `(minuso q q q)`
     in unbounded open search.
+  - division alias classes with shared variables (including bounded-outer-domain
+    forms such as `(divo x (build-num 2) '() x)` and
+    `(divo x (build-num 2) (build-num 1) x)`) are currently classified as
+    expected divergence.
 - **Out of scope**
   - claims of finite refutation for arbitrary conjunctions with shared variables.
 

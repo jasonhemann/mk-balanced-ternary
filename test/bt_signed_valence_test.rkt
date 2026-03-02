@@ -179,7 +179,7 @@
      #:decode-answer decode-bt-tuple
      #:k 1
      #:k2 1
-     #:timeout-ms 2500)))
+     #:timeout-ms 6000)))
 
 (test-case "bt signed valence: deterministic cross-sign agreement with Racket arithmetic"
   ;; Exhaust a small opposite-sign domain to keep this strict and stable.

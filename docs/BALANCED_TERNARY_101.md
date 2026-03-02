@@ -108,7 +108,41 @@ Division-focused coverage is active in:
 - `test/bt_signed_valence_test.rkt`
 - `test/bt_finite_failure_test.rkt`
 
-## 6) Practical query templates
+## 6) How to audit `divo` constructively
+
+Executive summary:
+- The relation is long-division style over LSD-first BT numerals, not a host
+  arithmetic wrapper.
+- Every recursive step peels one dividend trit and commits one quotient trit.
+- Bounds are shape relations over numeral length, not host integers.
+
+Equation-level audit view:
+1. Core decomposition:
+   - `n = d + 3*n'`
+   - recurse with `n' = m*q' + r'`
+2. Correction stage:
+   - `t = d + 3*r'`
+   - choose `k in {-1,0,1,2}` such that:
+     - `q = 3*q' + k`
+     - `r = t - k*m`
+     - `0 <= r < m` (nonnegative core)
+3. Signed wrapper:
+   - reduce to positive-divisor core through `|n|` and/or `|m|`,
+   - map quotient sign and Euclidean remainder back to original signs.
+
+Size/bound audit view:
+- Internal shape bound is derived from divisor/dividend structure:
+  - `len(bound) = 1 + len(n) + len(m)`
+- Public `divo` keeps arity 4 and internalizes this bound.
+- Quotient length is constrained internally by that bound relation.
+
+Operational classification audit view:
+- Ground deterministic queries must close (fast suite).
+- Bounded finite-domain mode checks must close (fast + assurance).
+- Shared-variable alias classes are tracked as expected divergence in assurance
+  (and selected fast regression guardrails), not as finite-failure obligations.
+
+## 7) Practical query templates
 
 Bounded solve for addends:
 
@@ -132,7 +166,7 @@ Bounded solve for factor pairs:
     (== q (list x y))))
 ```
 
-## 7) What to remember when inspecting outputs
+## 8) What to remember when inspecting outputs
 
 - Lists are LSD-first.
 - `T` is `-1`, not a type marker.

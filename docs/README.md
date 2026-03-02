@@ -7,7 +7,9 @@ This directory separates normative requirements from planning and explanatory no
 - `ROADMAP.md`
   - Phase sequencing and planning priorities.
 - `BALANCED_TERNARY_101.md`
-  - Practical guide to reading and writing raw balanced-ternary terms in relational queries.
+  - Practical guide to reading and writing raw balanced-ternary terms in relational queries, including an audit-oriented `divo` walkthrough.
+- `DIVO_AUDIT.md`
+  - Constructive `divo` implementation audit: equation-level clause map, productivity contract, and current refactoring policy.
 - `MUL_HAND_TESTS.md`
   - Curated REPL playbook for manually probing `*o` behavior across ground, inverse, partial-tail, and flow-order cases.
 - `RELATIONAL_DIRECTIVES.md`

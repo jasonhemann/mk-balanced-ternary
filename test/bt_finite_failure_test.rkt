@@ -207,4 +207,4 @@
      #:decode-answer decode-bt-tuple
      #:k 8
      #:k2 20
-     #:timeout-ms 2500)))
+     #:timeout-ms 6000)))

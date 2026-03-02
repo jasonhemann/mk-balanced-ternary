@@ -14,6 +14,9 @@
   (build-list len (lambda (i) 'k)))
 
 (define bound (make-bound 2))
+;; Internal operational envelope for exhaustive len<=2 division sweeps.
+;; Keep this explicit so exhaustive vvvv checks close deterministically.
+(define div-bound (make-bound 6))
 (define maxabs (max-abs-for-len 2))
 (define ints (int-range (- maxabs) maxabs))
 
@@ -72,7 +75,7 @@
       (bind-int-if m m0)
       (bind-int-if q q0)
       (bind-int-if r r0)
-      (divo n m q r)
+      (divo-boundedo n m q r div-bound)
       (== ans (list n m q r)))))
 
 (define (run-with-timeout timeout-ms thunk)

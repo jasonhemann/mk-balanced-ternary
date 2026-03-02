@@ -12,9 +12,9 @@ These directives capture recurring implementation rules for arithmetic relations
      accepted term set is unchanged.
    - Examples that validated: `shift3o` and carry-propagation guards in `add-carryo`.
 
-3. Use disequality only when the variable domain is already constrained.
-   - Example: `(=/= d '0)` in `canco` is acceptable because `d` is constrained by `trito`.
-   - Avoid using disequality as the only digit-domain mechanism.
+3. Do not use disequality in arithmetic or abstract-interpretation relations.
+   - Keep arithmetic and abstract-interpretation cores pure-unification/equation based.
+   - Disequality is allowed only in tests/harnesses for classification and pruning.
 
 4. Keep "shape-only" helpers separate from strict canonical predicates.
    - `canco-shapeo` may be lighter-weight for arithmetic surface checks.
@@ -66,3 +66,34 @@ These directives capture recurring implementation rules for arithmetic relations
    - Classify those modes explicitly as expected divergence (for example
      `(*o q q q)` after the first two answers), and keep bounded checks as the
      regression contract.
+
+14. Keep `divo` specified as a constructive recurrence, not as a global proof guard.
+    - Core steps should follow `n = d + 3*n'`, recursive division of `n'`,
+      and local correction `t = d + 3*r'` with quotient/remainder update.
+    - Keep equation-level meaning clear in comments/docs so each clause is
+      auditable against the constructive long-division story.
+
+15. Distinguish finite obligations from alias-class divergence in division.
+    - Required-to-close: ground and bounded finite-domain `divo` modes used by
+      fast/assurance contracts.
+    - Expected divergence: shared-variable alias classes such as
+      `(divo x (build-num 2) '() x)` and `(divo x (build-num 2) (build-num 1) x)`.
+
+16. Defer broad abstraction until the operational shape is stable.
+    - Do not introduce higher-order relation patterns (relation-valued returns,
+      relation arguments, or specialization flags) while `divo` is still being tuned.
+    - Keep clause flow explicit and auditable during productivity/debugging passes.
+
+17. Allow only first-order helper extraction for duplicated logic.
+    - Extract a helper only when the repeated conjunction has identical semantics
+      in all call sites and branch ordering can remain unchanged.
+    - If helper extraction changes clause interleaving or weakens pruning, revert it.
+
+18. Keep a clause-to-equation audit story for `divo`.
+    - Each `divo` clause should map to one equation-level case
+      (`n < m`, `n = m + r`, recursive `n = d + 3*n'` with local correction).
+    - For each case, document productive mode classes and known operational risks.
+
+19. Prefer early pruning equations before recursive disjunctions.
+    - Move cheap equalities/order checks ahead of recursive branches only when they
+      strictly cut failing branches and do not discard valid symbolic solutions.

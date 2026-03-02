@@ -7,6 +7,11 @@ Current examples:
 - `bt_playground.rkt`
   - DrRacket/REPL playground helpers and sample queries for `pluso`, `*o`,
     and `divo`.
+- `bt_div_trace_playground.rkt`
+  - trace-oriented division playground:
+    - direct `div-correcto` branch seeds (`k=-1,0,1,2`),
+    - small two-step family around `19/4`,
+    - quotient-fixed and disequality-guided probes to reach questionable tails quickly.
 - `bt_absint_rel.rkt`
   - Big-step relational abstract interpreter over interval states using BT
     arithmetic (`aevalo`, `execo`, interval operations, and state helpers).

@@ -54,14 +54,31 @@ Progress:
 - Implemented: symbolic-answer partition/non-overlap checks for key open modes (`pluso`, `minuso`, `*o`) in both fast and assurance suites.
 
 Immediate worklist (API-shape and relationality cleanup):
-- Extend symbolic-answer partition checks (exact denotation + non-overlap) to
-  representative open `divo` modes under bounded domains.
-- Keep boundary domain guards explicit and test-backed (via ablation checks)
-  while arithmetic surfaces stay as implicit-domain as possible.
-- Completed: removed exposed bound parameter from the public Euclidean division surface (`divo n m q r`), keeping bounded helper logic internal.
-- Move required bound/canonical constraints inside the arithmetic relation implementation path, so callers are not forced to add extra conjunctions for core arithmetic behavior.
-- Keep deterministic ground canonical behavior while documenting partial-term behavior explicitly (ground uniqueness vs. open-term denotation).
-- After the above refactor, re-run and tighten mode/termination matrices against the public arities.
+- [x] Patch `*o` canonical leak in open modes: prevent non-canonical zero tails
+  from surfacing in answers (for example `(*o q '(T) q)`), and add a regression
+  that rejects non-canonical outputs.
+- [x] Keep public `divo` as a single 4-ary long-division surface with internal
+  shape-bound handling (no explicit bound parameter and no q/r dispatch in the
+  public wrapper).
+- [ ] Continue `divo` productivity tuning and mode classification, including slow
+  shared-variable alias classes and signed inverse cases.
+- [ ] Re-check bounded `divo` mode behavior after each tuning pass, including known slow
+  masks (`gvgv`) and sign-symmetric cases (`m='(1)` vs `m='(T)`), then place
+  unstable/slow cases in assurance with explicit classification.
+- [ ] Abstraction freeze while `divo` shape is still moving:
+  only first-order helper extraction for clearly duplicated conjunctions;
+  no relation-valued abstractions or specialization-by-parameter patterns.
+- [ ] Build a clause-to-equation `divo` audit note (executive summary + programmer detail)
+  that maps each branch to constructive long-division cases and its productivity risks.
+- [ ] Remove or repurpose dead helper relations after each tuning pass.
+- [x] Keep additive identity answers partitioned
+  (`pluso '() q q` returns `(() (_.0 . _.1))`) as intentional behavior; do not
+  normalize to a single most-general family.
+- [x] Keep implicit well-formedness domain assumption: arithmetic relations are
+  specified over BT numerals (and their logical generalizations), and behavior
+  on malformed concrete inputs is out of scope for acceptance.
+- [x] Removed exposed bound parameter from public Euclidean `divo` surface
+  (`divo n m q r`), keeping bounded helper logic internal.
 
 ### M2 Ordering (optional)
 - Add bounded ordering relations (for example, `<o`, `<=o`) with explicit max-digit bound parameters.
