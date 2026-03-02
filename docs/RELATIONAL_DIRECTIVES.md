@@ -100,3 +100,8 @@ These directives capture recurring implementation rules for arithmetic relations
 19. Prefer early pruning equations before recursive disjunctions.
     - Move cheap equalities/order checks ahead of recursive branches only when they
       strictly cut failing branches and do not discard valid symbolic solutions.
+
+20. Prefer specialized structural dispatch for `divo` over generic bound envelopes.
+    - Target arithm.prl-style local split/length dispatch in the recursive flow.
+    - Treat helper-generated bound-token control (for example `nmo-boundo`/
+      `nm-tight-boundo`) as transitional only; do not make it the long-term model.

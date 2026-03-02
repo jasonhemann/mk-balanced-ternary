@@ -77,9 +77,12 @@ The following relations are required:
   - Signed wrapper:
     - Translate to the nonnegative core with `|n|` and/or `|m|`,
       then map `(q,r)` back to Euclidean form for the original signs.
-  - Internal bound construction:
-    - shape bound from dividend/divisor: `len(bound) = 1 + len(n) + len(m)`.
-    - quotient constrained by `len(q) <= len(bound)`.
+  - Structural-dispatch target (next acceptance gate):
+    - branch selection should come from local structural constraints
+      (split/length/decomposition relations), not a generic bounded comparator pass.
+    - no synthetic bound-token helper should be required on the critical `divo`
+      recursion path (for example `nmo-boundo`/`nm-tight-boundo`-style control envelopes).
+    - internal ordering/bounds must still be relation-internal and constructive.
 
 ## 5. Operational and mode contract
 
@@ -169,6 +172,13 @@ Fast suite (`test/`) is the default regression gate:
 Slow assurance suite (`assurance/`) is the deeper confidence gate:
 - larger randomized workloads,
 - engine-based timeout assertions for known divergent query shapes.
+
+Division structural-dispatch acceptance (next gate):
+- `divo` remains 4-ary at the public surface.
+- `divo` control flow is driven by local structural dispatch (arithm.prl-style),
+  not a synthetic internal bound-token envelope.
+- fast and assurance `divo` matrices are re-baselined against that structural
+  implementation and continue to pass.
 
 Any test that can produce infinitely many satisfying answers must include explicit finite bounds when used as a regression check.
 

@@ -5,7 +5,7 @@ Normative semantics and acceptance requirements are defined in `docs/SPEC.md`.
 
 ## Objective
 
-Sequence work from a stable balanced-ternary arithmetic core toward optional ordering and interop features, while preserving explicit operational bounds in tests and APIs where needed.
+Sequence work from a stable balanced-ternary arithmetic core toward optional ordering and interop features, while preserving explicit operational bounds in tests and APIs where needed and driving `divo` toward specialized structural dispatch.
 
 ## Current phase (M0 + M1)
 
@@ -20,7 +20,7 @@ Exit criteria:
 - Any current gaps are tracked as explicit follow-up tasks.
 
 Current focus:
-- Keep hardening symbolic-denotational harness behavior and boundary/domain contracts while Euclidean `divo` is active as a public 4-ary relation with internal bound handling.
+- Keep hardening symbolic-denotational harness behavior and boundary/domain contracts while Euclidean `divo` stays 4-ary and moves from helper-envelope control toward local structural dispatch.
 
 ## Planned follow-on phases
 
@@ -62,6 +62,9 @@ Immediate worklist (API-shape and relationality cleanup):
   public wrapper).
 - [ ] Continue `divo` productivity tuning and mode classification, including slow
   shared-variable alias classes and signed inverse cases.
+- [ ] Structural-dispatch acceptance gate for `divo`:
+  replace helper-envelope control with arithm.prl-style local split/length
+  dispatch in the recursive division flow.
 - [ ] Re-check bounded `divo` mode behavior after each tuning pass, including known slow
   masks (`gvgv`) and sign-symmetric cases (`m='(1)` vs `m='(T)`), then place
   unstable/slow cases in assurance with explicit classification.
