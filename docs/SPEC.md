@@ -114,10 +114,10 @@ The current phase uses three operational classes:
   - canonical example: `(*o q q q)` beyond the first two answers.
   - analogous additive aliases such as `(pluso q q q)` and `(minuso q q q)`
     in unbounded open search.
-  - division alias classes with shared variables (including bounded-outer-domain
-    forms such as `(divo x (build-num 2) '() x)` and
-    `(divo x (build-num 2) (build-num 1) x)`) are currently classified as
-    expected divergence.
+  - open division alias classes such as `(divo q q q '())`,
+    `(divo q q (build-num 1) q)`, and `(divo x x (build-num 1) x)`.
+  - bounded finite-domain aliases like `(bto-boundedo x B), (divo x (build-num 2) '() x)`
+    are tracked as finite success/failure, not expected divergence.
 - **Out of scope**
   - claims of finite refutation for arbitrary conjunctions with shared variables.
 

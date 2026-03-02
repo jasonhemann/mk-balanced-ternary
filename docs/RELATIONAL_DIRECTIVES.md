@@ -76,8 +76,11 @@ These directives capture recurring implementation rules for arithmetic relations
 15. Distinguish finite obligations from alias-class divergence in division.
     - Required-to-close: ground and bounded finite-domain `divo` modes used by
       fast/assurance contracts.
-    - Expected divergence: shared-variable alias classes such as
-      `(divo x (build-num 2) '() x)` and `(divo x (build-num 2) (build-num 1) x)`.
+    - Expected divergence: open shared-variable alias classes such as
+      `(divo q q q '())` and `(divo q q (build-num 1) q)`.
+    - Bounded aliases with explicit finite domains (for example
+      `(bto-boundedo x B), (divo x (build-num 2) '() x)`) should be treated as
+      finite success/failure checks.
 
 16. Defer broad abstraction until the operational shape is stable.
     - Do not introduce higher-order relation patterns (relation-valued returns,

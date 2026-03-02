@@ -139,8 +139,10 @@ Size/bound audit view:
 Operational classification audit view:
 - Ground deterministic queries must close (fast suite).
 - Bounded finite-domain mode checks must close (fast + assurance).
-- Shared-variable alias classes are tracked as expected divergence in assurance
-  (and selected fast regression guardrails), not as finite-failure obligations.
+- Bounded `n=r` division aliases with explicit finite domains are tracked as
+  finite success/failure.
+- Open shared-variable alias classes (for example `divo q q q '()`) are tracked
+  as expected divergence in assurance.
 
 ## 7) Practical query templates
 

@@ -222,6 +222,15 @@
        (== bound `(,marker . ,brest))
        (len<=o rest brest))]))
 
+;; Length-only upper bound (no digit-domain constraints).
+(defrel (len-shape<=o bt bound)
+  (conde
+    [(== bt '())]
+    [(fresh (d rest brest marker)
+       (== bt `(,d . ,rest))
+       (== bound `(,marker . ,brest))
+       (len-shape<=o rest brest))]))
+
 (defrel (bto-boundedo bt bound)
   (len<=o bt bound)
   (canco bt))
@@ -250,6 +259,33 @@
   (fresh (nm)
     (== `(k . ,nm) bound)
     (len-appendo n m nm)))
+
+;; Length-only helpers (list-shape only).
+(defrel (sameleno x y)
+  (conde
+    [(== x '()) (== y '())]
+    [(fresh (xa xd ya yd)
+       (== `(,xa . ,xd) x)
+       (== `(,ya . ,yd) y)
+       (sameleno xd yd))]))
+
+(defrel (shortero x y)
+  (conde
+    [(== x '()) (nonzeroo y)]
+    [(fresh (xa xd ya yd)
+       (== `(,xa . ,xd) x)
+       (== `(,ya . ,yd) y)
+       (shortero xd yd))]))
+
+;; Tighter local division bound: 1 + max(len(n), len(m)).
+(defrel (nm-tight-boundo n m bound)
+  (conde
+    [(shortero n m)
+     (== `(k . ,m) bound)]
+    [(conde
+       [(shortero m n)]
+       [(sameleno n m)])
+     (== `(k . ,n) bound)]))
 
 (defrel (zeroo n)
   (== n '()))
@@ -386,13 +422,13 @@
 	   (== m `(,mt . ,md))
 	   (trito d)
        (nonzeroo md)
-       (conde
-         [(eq-boundedo n m bound)]
-         [(lto-boundedo m n bound)])
-       (fresh (qrest rrest t)
-         (divo-nat-boundedo nrest m qrest rrest bound)
-         (times3-plus-digito rrest d t)
-         (div-correcto t m qrest q r bound)))])
+	       (conde
+	         [(eq-boundedo n m bound)]
+	         [(lto-boundedo m n bound)])
+	       (fresh (qrest rrest t)
+	         (divo-nat-boundedo nrest m qrest rrest bound)
+	         (times3-plus-digito rrest d t)
+	         (div-correcto t m qrest q r bound)))])
   (nneg-boundedo q bound)
   (nneg-boundedo r bound)
   (lto-boundedo r m bound))
@@ -420,19 +456,18 @@
        ;; risk: inexact branch adds one quotient-shift/construction choice.
        [(fresh (an q0 r0)
           (lto-boundedo n '() bound)
+          (lto-boundedo q '() bound)
           (negateo n an)
           (nneg-boundedo an bound)
+          (divo-nat-boundedo an m q0 r0 bound)
           (conde
             ;; Clause 1b.i: exact division stays exact under sign flip.
-            ;; Prune early when caller already constrains r = 0.
-            [(== r '())
-             (divo-nat-boundedo an m q0 '() bound)
+            [(== r0 '())
+             (== r '())
              (negateo q0 q)]
-            ;; Clause 1b.ii: otherwise shift quotient by -1 and complement remainder.
-            ;; Prune exact branch early when caller constrains r /= 0.
-            [(nonzeroo r)
-             (divo-nat-boundedo an m q0 r0 bound)
-             (nonzeroo r0)
+            ;; Clause 1b.ii: inexact division shifts quotient by -1 and
+            ;; complements the remainder.
+            [(nonzeroo r0)
              (fresh (q0+1)
                (pluso q0 '(1) q0+1)
                (negateo q0+1 q)
@@ -448,23 +483,25 @@
          ;; Clause 2a (n>=0): q sign flips, remainder unchanged.
          [(fresh (q0)
             (nneg-boundedo n bound)
-            (divo-nat-boundedo n am q0 r bound)
-            (negateo q0 q))]
+            (conde
+              [(== q '())]
+              [(lto-boundedo q '() bound)])
+            (negateo q0 q)
+            (divo-nat-boundedo n am q0 r bound))]
          ;; Clause 2b (n<0): both signs negative; adjust as in m>0 case.
          [(fresh (an q0 r0)
             (lto-boundedo n '() bound)
+            (nneg-boundedo q bound)
             (negateo n an)
             (nneg-boundedo an bound)
+            (divo-nat-boundedo an am q0 r0 bound)
             (conde
-              ;; Clause 2b.i: exact division.
-              ;; Prune early when caller already constrains r = 0.
-              [(== r '())
-               (divo-nat-boundedo an am q '() bound)]
+              ;; Clause 2b.i: exact division, quotient unchanged.
+              [(== r0 '())
+               (== r '())
+               (== q q0)]
               ;; Clause 2b.ii: inexact division, bump q by +1 and complement r.
-              ;; Prune exact branch early when caller constrains r /= 0.
-              [(nonzeroo r)
-               (divo-nat-boundedo an am q0 r0 bound)
-               (nonzeroo r0)
+              [(nonzeroo r0)
                (pluso q0 '(1) q)
                (pluso r0 r am)]))]))]))
 
@@ -472,10 +509,11 @@
   (fresh (qbound)
     ;; Public wrapper (uniform policy, no q/r case split):
     ;; 1) derive structural bound from n,m shape,
-    ;; 2) run bounded Euclidean core under that envelope,
-    ;; 3) enforce quotient length.
+    ;; 2) add lightweight (shape-only) local length caps for q and r,
+    ;; 3) run bounded Euclidean core under that envelope.
     ;; productive-modes: gggg, ggvv, bounded inverse templates
     ;; risk: fully open alias classes remain intentionally unbounded.
-    (nmo-boundo n m qbound)
-    (divo-boundedo n m q r qbound)
-    (len<=o q qbound)))
+    (nm-tight-boundo n m qbound)
+    (len-shape<=o q n)
+    (len-shape<=o r m)
+    (divo-boundedo n m q r qbound)))

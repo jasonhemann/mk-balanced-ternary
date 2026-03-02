@@ -76,7 +76,49 @@
    (lambda ()
      (run 1 (w)
        (divo '(1) '(1) '() '(1))
-       (== w 'ok)))))
+       (== w 'ok))))
+  (check-finite-success
+   "divo n=r, m=2, q=0 (bounded x, run 3)"
+   '(() (1))
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num 2) '() x)))
+   #:timeout-ms 1800)
+  (check-finite-success
+   "divo n=r, m=-2, q=0 (bounded x, run 3)"
+   '(() (1))
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num -2) '() x)))
+   #:timeout-ms 1800)
+  (check-finite-failure
+   "divo n=r, m=2, q=1 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num 2) (build-num 1) x)))
+   #:timeout-ms 1800)
+  (check-finite-failure
+   "divo n=r, m=-2, q=1 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num -2) (build-num 1) x)))
+   #:timeout-ms 1800)
+  (check-finite-failure
+   "divo n=r, m=2, q=-1 (bounded x, run 3)"
+   (lambda ()
+     (run 3 (x)
+       (bto-boundedo x alias-bound)
+       (divo x (build-num 2) (build-num -1) x)))
+   #:timeout-ms 1800)
+  (check-finite-failure
+   "divo n=1, m=q=r (run 3)"
+   (lambda ()
+     (run 3 (x)
+       (divo (build-num 1) x x x)))))
 
 (test-case "bt alias operational: expected divergence representatives"
   ;; Under pure-unification search, these shared-variable aliases are
@@ -96,41 +138,6 @@
    (lambda ()
      (run 3 (q)
        (*o q q q))))
-  (check-expected-divergence
-   "divo n=r, m=2, q=0 (bounded x, run 3)"
-   (lambda ()
-     (run 3 (x)
-       (bto-boundedo x alias-bound)
-       (divo x (build-num 2) '() x)))
-   #:timeout-ms 1800)
-  (check-expected-divergence
-   "divo n=r, m=-2, q=0 (bounded x, run 3)"
-   (lambda ()
-     (run 3 (x)
-       (bto-boundedo x alias-bound)
-       (divo x (build-num -2) '() x)))
-   #:timeout-ms 1800)
-  (check-expected-divergence
-   "divo n=r, m=2, q=1 (bounded x, run 3)"
-   (lambda ()
-     (run 3 (x)
-       (bto-boundedo x alias-bound)
-       (divo x (build-num 2) (build-num 1) x)))
-   #:timeout-ms 1800)
-  (check-expected-divergence
-   "divo n=r, m=-2, q=1 (bounded x, run 3)"
-   (lambda ()
-     (run 3 (x)
-       (bto-boundedo x alias-bound)
-       (divo x (build-num -2) (build-num 1) x)))
-   #:timeout-ms 1800)
-  (check-expected-divergence
-   "divo n=r, m=2, q=-1 (bounded x, run 3)"
-   (lambda ()
-     (run 3 (x)
-       (bto-boundedo x alias-bound)
-       (divo x (build-num 2) (build-num -1) x)))
-   #:timeout-ms 1800)
   (check-expected-divergence
    "divo q=q*q+0 alias stream (run 2)"
    (lambda ()
@@ -153,11 +160,6 @@
    (lambda ()
      (run 3 (x)
        (divo x (build-num 1) x x))))
-  (check-expected-divergence
-   "divo n=1, m=q=r (run 3)"
-   (lambda ()
-     (run 3 (x)
-       (divo (build-num 1) x x x))))
   (check-expected-divergence
    "divo r=1, n=m=q (run 3)"
    (lambda ()

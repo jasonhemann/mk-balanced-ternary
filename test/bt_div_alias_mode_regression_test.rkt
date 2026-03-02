@@ -23,44 +23,41 @@
 (define (check-run-finite-failure name thunk #:timeout-ms [timeout-ms 1800])
   (check-run-terminates name '() thunk #:timeout-ms timeout-ms))
 
-(define (check-run-diverges name thunk #:timeout-ms [timeout-ms 1800])
-  (define-values (done? _out)
-    (run-with-timeout timeout-ms thunk))
-  (check-false done? (format "~a unexpectedly closed" name)))
-
-(test-case "divo alias regression: n=r shared-variable classes are expected divergence"
-  ;; These open alias shapes are currently classified as expected divergence:
-  ;; even under finite outer bounds, the internal shared-variable search does
-  ;; not close in the fast-suite budget.
-  (check-run-diverges
+(test-case "divo alias regression: bounded n=r shared-variable classes close finitely"
+  ;; First-principles classification:
+  ;; with explicit finite outer bounds on x, these n=r alias queries should
+  ;; close as finite success/failure checks.
+  (check-run-terminates
    "n=r, m=2, q=0"
+   '(() (1))
    (lambda ()
      (run 3 (x)
        (bto-boundedo x alias-bound)
        (divo x (build-num 2) '() x)))
    #:timeout-ms 2500)
-  (check-run-diverges
+  (check-run-terminates
    "n=r, m=-2, q=0"
+   '(() (1))
    (lambda ()
      (run 3 (x)
        (bto-boundedo x alias-bound)
        (divo x (build-num -2) '() x)))
    #:timeout-ms 2500)
-  (check-run-diverges
+  (check-run-finite-failure
    "n=r, m=2, q=1"
    (lambda ()
      (run 3 (x)
        (bto-boundedo x alias-bound)
        (divo x (build-num 2) (build-num 1) x)))
    #:timeout-ms 2500)
-  (check-run-diverges
+  (check-run-finite-failure
    "n=r, m=-2, q=1"
    (lambda ()
      (run 3 (x)
        (bto-boundedo x alias-bound)
        (divo x (build-num -2) (build-num 1) x)))
    #:timeout-ms 2500)
-  (check-run-diverges
+  (check-run-finite-failure
    "n=r, m=2, q=-1"
    (lambda ()
      (run 3 (x)

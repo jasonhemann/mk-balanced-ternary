@@ -34,7 +34,7 @@ Composition:
   - `bt_div_exhaustive_mode_test.rkt` (bounded Euclidean `divo` representative run* checks; full sweep is in assurance)
   - `bt_div_branch_prune_test.rkt` (small branch-targeting finite-failure checks that exercise exact/inexact signed `divo` branches with explicit remainder-shape constraints)
   - `bt_div_path_target_test.rkt` (small path-targeting checks for `div-correcto` branch seeds and the two-step family around `19/4`)
-  - `bt_div_alias_mode_regression_test.rkt` (expected-divergence guardrails for known shared-variable `divo` alias classes)
+  - `bt_div_alias_mode_regression_test.rkt` (bounded `divo` alias regression checks: finite success/failure for `n=r` classes)
   - `support/bt_harness.rkt` (test-only BT harness utilities)
 - Example regression tests:
   - `examples/bt_absint_rel_test.rkt`

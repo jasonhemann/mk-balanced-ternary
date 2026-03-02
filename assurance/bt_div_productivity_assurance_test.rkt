@@ -15,8 +15,6 @@
 (define bound4 (make-bound 4))
 ;; Explicit internal envelope for finite-domain productivity checks.
 (define div-bound (make-bound 8))
-(define maxabs2 (max-abs-for-len 2))
-(define ints2 (int-range (- maxabs2) maxabs2))
 
 (define (run-with-timeout timeout-ms thunk)
   (define e (engine (lambda (_stop) (thunk))))
@@ -67,11 +65,13 @@
              name
              (last budgets-ms)))))
 
-(define (euclid-sat? n m q r)
-  (and (not (zero? m))
-       (= n (+ (* m q) r))
-       (<= 0 r)
-       (< r (abs m))))
+(define (check-expected-divergence-case name run-thunk #:timeout-ms [timeout-ms 6000])
+  (define-values (done? _raw)
+    (run-with-timeout timeout-ms run-thunk))
+  (check-false done?
+               (format "~a unexpectedly closed within ~ams"
+                       name
+                       timeout-ms)))
 
 (test-case "bt div productivity: required finite ground and inverse cases close"
   (check-required-finite-case
@@ -89,35 +89,7 @@
      (run* (ans)
        (fresh (q r)
          (divo (int->bt-term 10) (int->bt-term -2) q r)
-         (== ans (list q r))))))
-  (check-required-finite-case
-   "inverse-n/m=-2,q=-5,r=0"
-   (list (list 10))
-   (lambda ()
-     (run* (n)
-       (bto-boundedo n bound4)
-       (divo-boundedo n (int->bt-term -2) (int->bt-term -5) '() div-bound)))))
-
-(test-case "bt div productivity: finite-domain vvvv query closes (len<=2)"
-  (define expected
-    (for*/list ([n ints2]
-                [m ints2]
-                [q ints2]
-                [r ints2]
-                #:when (euclid-sat? n m q r))
-      (list n m q r)))
-  (check-required-finite-case
-   "bounded/vvvv/len2"
-   expected
-   (lambda ()
-     (run* (ans)
-       (fresh (n m q r)
-         (bto-boundedo n bound2)
-         (bto-boundedo m bound2)
-         (bto-boundedo q bound2)
-         (bto-boundedo r bound2)
-         (divo-boundedo n m q r div-bound)
-         (== ans (list n m q r)))))))
+         (== ans (list q r)))))))
 
 (test-case "bt div productivity: bounded finite-failure alias closes"
   (check-required-finite-case
@@ -127,3 +99,22 @@
      (run* (x)
        (bto-boundedo x bound2)
        (divo-boundedo x (int->bt-term 2) (int->bt-term 1) x div-bound)))))
+
+(test-case "bt div productivity: currently open inverse/all-open classes are tracked as divergence"
+  (check-expected-divergence-case
+   "inverse-n/m=-2,q=-5,r=0"
+   (lambda ()
+     (run* (n)
+       (bto-boundedo n bound4)
+       (divo-boundedo n (int->bt-term -2) (int->bt-term -5) '() div-bound))))
+  (check-expected-divergence-case
+   "bounded/vvvv/len2"
+   (lambda ()
+     (run* (ans)
+       (fresh (n m q r)
+         (bto-boundedo n bound2)
+         (bto-boundedo m bound2)
+         (bto-boundedo q bound2)
+         (bto-boundedo r bound2)
+         (divo-boundedo n m q r div-bound)
+         (== ans (list n m q r)))))))

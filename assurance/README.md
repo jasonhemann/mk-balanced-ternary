@@ -55,7 +55,7 @@ Purpose:
   - representative alias goals for `pluso`, `minuso`, `*o`, and `divo`,
   - classified as finite success, finite failure, or expected divergence.
   - includes bounded `divo` alias shapes such as `n=r` with fixed `m,q`,
-    currently tracked as expected divergence under pure-unification dispatch.
+    tracked as finite success/failure under explicit finite-domain bounds.
 - Dedicated BT division productivity classification checks:
   - required finite queries are tested at escalating budgets (2s, 6s, 20s),
   - cases that close late are logged as slow,

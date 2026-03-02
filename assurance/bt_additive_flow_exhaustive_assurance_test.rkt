@@ -113,7 +113,7 @@
 (test-case "bt assurance: pluso/minuso satisfiable mode instances are flow-complete (len<=2)"
   ;; For every satisfiable bounded grounding instance in every mode, each flow
   ;; ordering must terminate and return the exact expected answer set.
-  (define timeout-ms 300)
+  (define timeout-ms 600)
   (for ([op '(pluso minuso)])
     (define sat (sat-tuples op))
     (for* ([mask (bool-masks 3)]

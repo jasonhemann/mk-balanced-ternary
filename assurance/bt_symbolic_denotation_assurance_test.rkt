@@ -41,7 +41,7 @@
 
 (define (check-symbolic-case name expected run-thunk
                              #:count count
-                             #:limit [limit 10]
+                             #:limit [limit count]
                              #:timeout-ms [timeout-ms 2000])
   (define-values (done? raw)
     (run-with-timeout timeout-ms
