@@ -31,6 +31,7 @@ Composition:
   - `bt_totality_test.rkt` (bounded completeness/totality checks, including all factor pairs for 12)
   - `bt_order_div_test.rkt` (bounded ordering checks + deterministic Euclidean `divo` checks)
   - `bt_div_mode_matrix_test.rkt` (bounded Euclidean `divo` representative mode matrix)
+  - `bt_div_structural_test.rkt` (alternative structural `divo-structo` checks + representative parity against main `divo`)
   - `bt_div_exhaustive_mode_test.rkt` (bounded Euclidean `divo` representative run* checks; full sweep is in assurance)
   - `bt_div_branch_prune_test.rkt` (small branch-targeting finite-failure checks that exercise exact/inexact signed `divo` branches with explicit remainder-shape constraints)
   - `bt_div_path_target_test.rkt` (small path-targeting checks for `div-correcto` branch seeds and the two-step family around `19/4`)

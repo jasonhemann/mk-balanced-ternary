@@ -46,6 +46,7 @@ Progress:
 - Implemented: bounded totality/completeness checks for multiplication (`test/bt_totality_test.rkt`), including exhaustive factorization of 12 and mode-matrix coverage.
 - Implemented: assurance-level fully open-mode totality check for bounded `*o` (`assurance/bt_totality_assurance_test.rkt`).
 - Implemented: bounded Euclidean `divo` mode matrix and representative bounded `run*` checks in fast regression (`test/bt_div_mode_matrix_test.rkt`, `test/bt_div_exhaustive_mode_test.rkt`).
+- Implemented: independent structural-dispatch division prototype (`src/bt_div_structural.rkt`) and dual-implementation mode/parity checks (`test/bt_div_mode_matrix_test.rkt`, `test/bt_div_structural_test.rkt`) as the first migration slice.
 - Implemented: full bounded exhaustive `divo` `run*` mode sweep in assurance (`assurance/bt_div_exhaustive_mode_assurance_test.rkt`).
 - Implemented: division portions of signed valence and finite-failure matrices.
 - Implemented: tightened carry-construction pruning in `pluso` (`sum-trim0o`) to remove duplicate proof paths that propagated into division answers.

@@ -12,6 +12,10 @@ Primary balanced-ternary modules:
 - `bt_oracle.rkt`
   - Host-level conversion oracle (`bt->int`, `int->bt`) used by tests.
   - Not part of relational arithmetic semantics.
+- `bt_div_structural.rkt`
+  - Alternative structural-dispatch Euclidean division prototype (`divo-structo`)
+    and supporting local structural helpers.
+  - Built for side-by-side comparison while migrating `divo` toward arithm.prl-style dispatch.
 
 Boundary rules:
 - Relational arithmetic semantics are defined by `docs/SPEC.md`.
